@@ -9,7 +9,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const deal = db.select().from(deals).where(eq(deals.id, id)).get();
+  const [deal] = await db.select().from(deals).where(eq(deals.id, id));
 
   if (!deal) {
     return NextResponse.json(
@@ -34,7 +34,7 @@ export async function PUT(
     return NextResponse.json({ error: "JSON invalido" }, { status: 400 });
   }
 
-  const existing = db.select().from(deals).where(eq(deals.id, id)).get();
+  const [existing] = await db.select().from(deals).where(eq(deals.id, id));
 
   if (!existing) {
     return NextResponse.json(
@@ -57,12 +57,11 @@ export async function PUT(
   }
   if (body.notes !== undefined) updateData.notes = body.notes;
 
-  const result = db
+  const [result] = await db
     .update(deals)
     .set(updateData)
     .where(eq(deals.id, id))
-    .returning()
-    .get();
+    .returning();
 
   return NextResponse.json(result);
 }
@@ -73,7 +72,7 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  const existing = db.select().from(deals).where(eq(deals.id, id)).get();
+  const [existing] = await db.select().from(deals).where(eq(deals.id, id));
 
   if (!existing) {
     return NextResponse.json(
@@ -82,6 +81,6 @@ export async function DELETE(
     );
   }
 
-  db.delete(deals).where(eq(deals.id, id)).run();
+  await db.delete(deals).where(eq(deals.id, id));
   return NextResponse.json({ success: true });
 }

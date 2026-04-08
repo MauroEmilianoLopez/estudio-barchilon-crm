@@ -9,14 +9,13 @@ import type { DashboardStats } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
-  const allContacts = db.select().from(contacts).all();
-  const allDeals = db.select().from(deals).all();
-  const stages = db
+export default async function DashboardPage() {
+  const allContacts = await db.select().from(contacts);
+  const allDeals = await db.select().from(deals);
+  const stages = await db
     .select()
     .from(pipelineStages)
-    .orderBy(asc(pipelineStages.order))
-    .all();
+    .orderBy(asc(pipelineStages.order));
 
   const activeDeals = allDeals.filter((d) => {
     const stage = stages.find((s) => s.id === d.stageId);
@@ -51,7 +50,7 @@ export default function DashboardPage() {
       color: stage.color,
     }));
 
-  const recentActivities = db
+  const recentActivities = await db
     .select({
       id: activities.id,
       type: activities.type,
@@ -62,8 +61,7 @@ export default function DashboardPage() {
     .from(activities)
     .leftJoin(contacts, eq(activities.contactId, contacts.id))
     .orderBy(desc(activities.createdAt))
-    .limit(5)
-    .all();
+    .limit(5);
 
   const isFirstRun = allContacts.length === 0 && allDeals.length === 0;
 
@@ -79,7 +77,7 @@ export default function DashboardPage() {
       {isFirstRun && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-6">
           <h2 className="text-lg font-semibold mb-2">
-            Bienvenido a Auto-CRM
+            Bienvenido al CRM del Estudio Barchilon
           </h2>
           <p className="text-sm text-muted-foreground mb-4">
             Tu CRM esta listo. Aqui tienes como comenzar:

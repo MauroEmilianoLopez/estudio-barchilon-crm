@@ -11,30 +11,20 @@
  *   "mcpServers": {
  *     "auto-crm": {
  *       "command": "npx",
- *       "args": ["tsx", "/path/to/auto-crm/mcp/crm-server.ts"],
- *       "env": {
- *         "CRM_DB_PATH": "/path/to/auto-crm/data/crm.db"
- *       }
+ *       "args": ["tsx", "/path/to/auto-crm/mcp/crm-server.ts"]
  *     }
  *   }
  * }
  */
 
 import crypto from "crypto";
-import Database from "better-sqlite3";
-import path from "path";
-import fs from "fs";
+import { createClient } from "@libsql/client";
+import "dotenv/config";
 
-const DB_PATH = process.env.CRM_DB_PATH || path.join(process.cwd(), "data", "crm.db");
-
-if (!fs.existsSync(DB_PATH)) {
-  process.stderr.write(`Database not found at ${DB_PATH}. Run 'npm run init' first.\n`);
-  process.exit(1);
-}
-
-const db = new Database(DB_PATH, { readonly: false, timeout: 5000 });
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL || "file:data/crm.db",
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
 // MCP Protocol implementation over stdio
 interface MCPMessage {
@@ -182,7 +172,7 @@ const tools = [
 ];
 
 // Tool handlers
-function handleTool(name: string, args: Record<string, unknown>): unknown {
+async function handleTool(name: string, args: Record<string, unknown>): Promise<unknown> {
   switch (name) {
     case "crm_list_contacts": {
       let sql = "SELECT * FROM contacts";
@@ -204,47 +194,50 @@ function handleTool(name: string, args: Record<string, unknown>): unknown {
       sql += " ORDER BY created_at DESC";
       sql += ` LIMIT ${Number(args.limit) || 50}`;
 
-      return db.prepare(sql).all(...params);
+      const result = await client.execute({ sql, args: params as Array<string | number | null> });
+      return result.rows;
     }
 
     case "crm_get_contact": {
-      const contact = db.prepare("SELECT * FROM contacts WHERE id = ?").get(args.id);
-      if (!contact) return { error: "Contacto no encontrado" };
+      const contactResult = await client.execute({ sql: "SELECT * FROM contacts WHERE id = ?", args: [args.id as string] });
+      if (contactResult.rows.length === 0) return { error: "Contacto no encontrado" };
+      const contact = contactResult.rows[0];
 
-      const deals = db
-        .prepare(
-          `SELECT d.*, ps.name as stage_name, ps.color as stage_color
-           FROM deals d LEFT JOIN pipeline_stages ps ON d.stage_id = ps.id
-           WHERE d.contact_id = ?`
-        )
-        .all(args.id);
+      const dealsResult = await client.execute({
+        sql: `SELECT d.*, ps.name as stage_name, ps.color as stage_color
+              FROM deals d LEFT JOIN pipeline_stages ps ON d.stage_id = ps.id
+              WHERE d.contact_id = ?`,
+        args: [args.id as string],
+      });
 
-      const activities = db
-        .prepare("SELECT * FROM activities WHERE contact_id = ? ORDER BY created_at DESC")
-        .all(args.id);
+      const activitiesResult = await client.execute({
+        sql: "SELECT * FROM activities WHERE contact_id = ? ORDER BY created_at DESC",
+        args: [args.id as string],
+      });
 
-      return { ...(contact as object), deals, activities };
+      return { ...contact, deals: dealsResult.rows, activities: activitiesResult.rows };
     }
 
     case "crm_create_contact": {
       const now = Math.floor(Date.now() / 1000);
       const id = crypto.randomUUID();
 
-      db.prepare(
-        `INSERT INTO contacts (id, name, email, phone, company, source, temperature, score, notes, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`
-      ).run(
-        id,
-        args.name,
-        args.email || null,
-        args.phone || null,
-        args.company || null,
-        args.source || "otro",
-        args.temperature || "cold",
-        args.notes || null,
-        now,
-        now
-      );
+      await client.execute({
+        sql: `INSERT INTO contacts (id, name, email, phone, company, source, temperature, score, notes, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+        args: [
+          id,
+          args.name as string,
+          (args.email as string) || null,
+          (args.phone as string) || null,
+          (args.company as string) || null,
+          (args.source as string) || "otro",
+          (args.temperature as string) || "cold",
+          (args.notes as string) || null,
+          now,
+          now,
+        ],
+      });
 
       return { id, message: `Contacto "${args.name}" creado exitosamente` };
     }
@@ -257,15 +250,16 @@ function handleTool(name: string, args: Record<string, unknown>): unknown {
         LEFT JOIN contacts c ON d.contact_id = c.id
         LEFT JOIN pipeline_stages ps ON d.stage_id = ps.id
       `;
-      const params: unknown[] = [];
+      const params: Array<string | number | null> = [];
 
       if (args.stageId) {
         sql += " WHERE d.stage_id = ?";
-        params.push(args.stageId);
+        params.push(args.stageId as string);
       }
       sql += ' ORDER BY ps."order", d.created_at DESC';
 
-      return db.prepare(sql).all(...params);
+      const result = await client.execute({ sql, args: params });
+      return result.rows;
     }
 
     case "crm_create_deal": {
@@ -274,38 +268,36 @@ function handleTool(name: string, args: Record<string, unknown>): unknown {
 
       let stageId = args.stageId as string;
       if (!stageId) {
-        const firstStage = db
-          .prepare('SELECT id FROM pipeline_stages ORDER BY "order" LIMIT 1')
-          .get() as { id: string } | undefined;
-        if (!firstStage) return { error: "No hay etapas de pipeline" };
-        stageId = firstStage.id;
+        const firstStageResult = await client.execute('SELECT id FROM pipeline_stages ORDER BY "order" LIMIT 1');
+        if (firstStageResult.rows.length === 0) return { error: "No hay etapas de pipeline" };
+        stageId = firstStageResult.rows[0].id as string;
       }
 
-      db.prepare(
-        `INSERT INTO deals (id, title, value, stage_id, contact_id, probability, notes, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).run(
-        id,
-        args.title,
-        Number(args.value) || 0,
-        stageId,
-        args.contactId,
-        Number(args.probability) || 0,
-        args.notes || null,
-        now,
-        now
-      );
+      await client.execute({
+        sql: `INSERT INTO deals (id, title, value, stage_id, contact_id, probability, notes, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          id,
+          args.title as string,
+          Number(args.value) || 0,
+          stageId,
+          args.contactId as string,
+          Number(args.probability) || 0,
+          (args.notes as string) || null,
+          now,
+          now,
+        ],
+      });
 
       return { id, message: `Deal "${args.title}" creado exitosamente` };
     }
 
     case "crm_move_deal": {
       const now = Math.floor(Date.now() / 1000);
-      db.prepare("UPDATE deals SET stage_id = ?, updated_at = ? WHERE id = ?").run(
-        args.stageId,
-        now,
-        args.dealId
-      );
+      await client.execute({
+        sql: "UPDATE deals SET stage_id = ?, updated_at = ? WHERE id = ?",
+        args: [args.stageId as string, now, args.dealId as string],
+      });
       return { message: "Deal movido exitosamente" };
     }
 
@@ -316,42 +308,40 @@ function handleTool(name: string, args: Record<string, unknown>): unknown {
         ? Math.floor(new Date(args.scheduledAt as string).getTime() / 1000)
         : null;
 
-      db.prepare(
-        `INSERT INTO activities (id, type, description, contact_id, deal_id, scheduled_at, completed_at, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, NULL, ?)`
-      ).run(id, args.type, args.description, args.contactId, args.dealId || null, scheduledAt, now);
+      await client.execute({
+        sql: `INSERT INTO activities (id, type, description, contact_id, deal_id, scheduled_at, completed_at, created_at)
+              VALUES (?, ?, ?, ?, ?, ?, NULL, ?)`,
+        args: [id, args.type as string, args.description as string, args.contactId as string, (args.dealId as string) || null, scheduledAt, now],
+      });
 
       return { id, message: "Actividad registrada exitosamente" };
     }
 
     case "crm_get_pipeline": {
-      const stages = db
-        .prepare('SELECT * FROM pipeline_stages ORDER BY "order"')
-        .all() as Array<Record<string, unknown>>;
+      const stagesResult = await client.execute('SELECT * FROM pipeline_stages ORDER BY "order"');
+      const stages = stagesResult.rows;
 
-      const deals = db
-        .prepare(
-          `SELECT d.*, c.name as contact_name, c.temperature as contact_temperature
-           FROM deals d LEFT JOIN contacts c ON d.contact_id = c.id`
-        )
-        .all() as Array<Record<string, unknown>>;
+      const dealsResult = await client.execute(
+        `SELECT d.*, c.name as contact_name, c.temperature as contact_temperature
+         FROM deals d LEFT JOIN contacts c ON d.contact_id = c.id`
+      );
+      const allDeals = dealsResult.rows;
 
       return stages.map((stage) => ({
         ...stage,
-        deals: deals.filter((d) => d.stage_id === stage.id),
+        deals: allDeals.filter((d) => d.stage_id === stage.id),
       }));
     }
 
     case "crm_get_followups": {
-      const pending = db
-        .prepare(
-          `SELECT a.*, c.name as contact_name, c.company as contact_company
-           FROM activities a
-           LEFT JOIN contacts c ON a.contact_id = c.id
-           WHERE a.completed_at IS NULL
-           ORDER BY a.scheduled_at ASC`
-        )
-        .all() as Array<Record<string, unknown>>;
+      const pendingResult = await client.execute(
+        `SELECT a.*, c.name as contact_name, c.company as contact_company
+         FROM activities a
+         LEFT JOIN contacts c ON a.contact_id = c.id
+         WHERE a.completed_at IS NULL
+         ORDER BY a.scheduled_at ASC`
+      );
+      const pending = pendingResult.rows;
 
       const now = Math.floor(Date.now() / 1000);
       const startOfDay = Math.floor(now / 86400) * 86400;
@@ -368,26 +358,22 @@ function handleTool(name: string, args: Record<string, unknown>): unknown {
     }
 
     case "crm_get_stats": {
-      const totalContacts = (
-        db.prepare("SELECT COUNT(*) as count FROM contacts").get() as { count: number }
-      ).count;
+      const totalContactsResult = await client.execute("SELECT COUNT(*) as count FROM contacts");
+      const totalContacts = Number(totalContactsResult.rows[0].count);
 
-      const stages = db.prepare("SELECT * FROM pipeline_stages").all() as Array<
-        Record<string, unknown>
-      >;
+      const stagesResult = await client.execute("SELECT * FROM pipeline_stages");
+      const stages = stagesResult.rows;
       const wonStageIds = stages.filter((s) => s.is_won).map((s) => s.id);
       const lostStageIds = stages.filter((s) => s.is_lost).map((s) => s.id);
       const closedIds = [...wonStageIds, ...lostStageIds];
 
-      const allDeals = db.prepare("SELECT * FROM deals").all() as Array<Record<string, unknown>>;
+      const allDealsResult = await client.execute("SELECT * FROM deals");
+      const allDeals = allDealsResult.rows;
       const activeDeals = allDeals.filter((d) => !closedIds.includes(d.stage_id as string));
       const wonDeals = allDeals.filter((d) => wonStageIds.includes(d.stage_id as string));
 
-      const hotLeads = (
-        db
-          .prepare("SELECT COUNT(*) as count FROM contacts WHERE temperature = 'hot'")
-          .get() as { count: number }
-      ).count;
+      const hotLeadsResult = await client.execute("SELECT COUNT(*) as count FROM contacts WHERE temperature = 'hot'");
+      const hotLeads = Number(hotLeadsResult.rows[0].count);
 
       return {
         totalContacts,
@@ -421,17 +407,21 @@ process.stdin.on("data", (chunk: string) => {
     if (!line.trim()) continue;
     try {
       const msg: MCPMessage = JSON.parse(line);
-      const response = handleMessage(msg);
-      if (response) {
-        process.stdout.write(JSON.stringify(response) + "\n");
-      }
+      processMessage(msg);
     } catch (e) {
       process.stderr.write(`Error parsing message: ${e}\n`);
     }
   }
 });
 
-function handleMessage(msg: MCPMessage): MCPMessage | null {
+async function processMessage(msg: MCPMessage) {
+  const response = await handleMessage(msg);
+  if (response) {
+    process.stdout.write(JSON.stringify(response) + "\n");
+  }
+}
+
+async function handleMessage(msg: MCPMessage): Promise<MCPMessage | null> {
   if (!msg.method) return null;
 
   switch (msg.method) {
@@ -443,7 +433,7 @@ function handleMessage(msg: MCPMessage): MCPMessage | null {
           protocolVersion: "2024-11-05",
           capabilities: { tools: {} },
           serverInfo: {
-            name: "auto-crm",
+            name: "estudio-barchilon-crm",
             version: "1.0.0",
           },
         },
@@ -462,7 +452,7 @@ function handleMessage(msg: MCPMessage): MCPMessage | null {
     case "tools/call": {
       const params = msg.params as { name: string; arguments?: Record<string, unknown> };
       try {
-        const result = handleTool(params.name, params.arguments || {});
+        const result = await handleTool(params.name, params.arguments || {});
         return {
           jsonrpc: "2.0",
           id: msg.id,
@@ -501,4 +491,4 @@ function handleMessage(msg: MCPMessage): MCPMessage | null {
   }
 }
 
-process.stderr.write("Auto-CRM MCP Server running\n");
+process.stderr.write("Estudio Barchilon CRM MCP Server running\n");

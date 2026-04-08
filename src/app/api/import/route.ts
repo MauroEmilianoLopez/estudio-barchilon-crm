@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      db.insert(contacts)
+      await db.insert(contacts)
         .values({
           name: contact.name,
           email: contact.email || null,
@@ -46,8 +46,7 @@ export async function POST(request: NextRequest) {
           notes: contact.notes || null,
           createdAt: now,
           updatedAt: now,
-        })
-        .run();
+        });
       results.imported++;
     } catch (error) {
       results.failed++;
