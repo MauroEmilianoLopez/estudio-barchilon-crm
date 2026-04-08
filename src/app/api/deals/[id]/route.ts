@@ -56,6 +56,13 @@ export async function PUT(
     updateData.probability = Math.max(0, Math.min(100, Number(body.probability)));
   }
   if (body.notes !== undefined) updateData.notes = body.notes;
+  if (body.agreedFees !== undefined) {
+    updateData.agreedFees = body.agreedFees != null ? Math.round(parseFloat(body.agreedFees) * 100) : null;
+  }
+  if (body.nextHearing !== undefined) {
+    updateData.nextHearing = body.nextHearing ? new Date(body.nextHearing) : null;
+  }
+  if (body.internalNotes !== undefined) updateData.internalNotes = body.internalNotes;
 
   const [result] = await db
     .update(deals)

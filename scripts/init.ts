@@ -47,6 +47,10 @@ async function init() {
       temperature TEXT NOT NULL DEFAULT 'cold',
       score INTEGER NOT NULL DEFAULT 0,
       notes TEXT,
+      case_type TEXT,
+      case_number TEXT,
+      court TEXT,
+      case_start_date INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )`,
@@ -67,6 +71,9 @@ async function init() {
       expected_close INTEGER,
       probability INTEGER NOT NULL DEFAULT 0,
       notes TEXT,
+      agreed_fees INTEGER,
+      next_hearing INTEGER,
+      internal_notes TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )`,

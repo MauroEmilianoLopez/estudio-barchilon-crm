@@ -73,6 +73,12 @@ export async function PUT(
   if (body.temperature !== undefined) updateData.temperature = body.temperature;
   if (body.score !== undefined) updateData.score = Math.max(0, Math.min(100, body.score));
   if (body.notes !== undefined) updateData.notes = body.notes;
+  if (body.caseType !== undefined) updateData.caseType = body.caseType;
+  if (body.caseNumber !== undefined) updateData.caseNumber = body.caseNumber;
+  if (body.court !== undefined) updateData.court = body.court;
+  if (body.caseStartDate !== undefined) {
+    updateData.caseStartDate = body.caseStartDate ? new Date(body.caseStartDate) : null;
+  }
 
   const [result] = await db
     .update(contacts)

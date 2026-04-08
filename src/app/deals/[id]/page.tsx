@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, DollarSign, Percent, FileText } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Percent, FileText, Gavel, Scale } from "lucide-react";
 import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/constants";
 import { ACTIVITY_TYPE_CONFIG } from "@/lib/constants";
 
@@ -69,7 +69,7 @@ export default async function DealDetailPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
@@ -112,6 +112,32 @@ export default async function DealDetailPage({
             </p>
           </CardContent>
         </Card>
+        {deal.agreedFees != null && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <Scale className="h-4 w-4" />
+                Honorarios
+              </div>
+              <p className="text-xl font-bold">
+                {formatCurrency(deal.agreedFees)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+        {deal.nextHearing && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                <Gavel className="h-4 w-4" />
+                Proxima audiencia
+              </div>
+              <p className="text-xl font-bold">
+                {formatDate(deal.nextHearing)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -122,6 +148,17 @@ export default async function DealDetailPage({
             </CardHeader>
             <CardContent>
               <p className="text-sm">{deal.notes}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {deal.internalNotes && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Notas internas del caso</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">{deal.internalNotes}</p>
             </CardContent>
           </Card>
         )}

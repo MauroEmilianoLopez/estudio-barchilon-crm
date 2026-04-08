@@ -12,6 +12,10 @@ export const contacts = sqliteTable("contacts", {
   temperature: text("temperature").notNull().default("cold"),
   score: integer("score").notNull().default(0),
   notes: text("notes"),
+  caseType: text("case_type"),
+  caseNumber: text("case_number"),
+  court: text("court"),
+  caseStartDate: integer("case_start_date", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -46,6 +50,9 @@ export const deals = sqliteTable("deals", {
   expectedClose: integer("expected_close", { mode: "timestamp" }),
   probability: integer("probability").notNull().default(0),
   notes: text("notes"),
+  agreedFees: integer("agreed_fees"),
+  nextHearing: integer("next_hearing", { mode: "timestamp" }),
+  internalNotes: text("internal_notes"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

@@ -15,6 +15,8 @@ export type LeadSource =
   | "webhook"
   | "otro";
 
+export type CaseType = "civil" | "laboral" | "familia" | "penal" | "comercial" | "otro";
+
 export interface Contact {
   id: string;
   name: string;
@@ -25,6 +27,10 @@ export interface Contact {
   temperature: Temperature;
   score: number;
   notes: string | null;
+  caseType: CaseType | null;
+  caseNumber: string | null;
+  court: string | null;
+  caseStartDate: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +44,9 @@ export interface Deal {
   expectedClose: Date | null;
   probability: number; // 0-100
   notes: string | null;
+  agreedFees: number | null; // in cents
+  nextHearing: Date | null;
+  internalNotes: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

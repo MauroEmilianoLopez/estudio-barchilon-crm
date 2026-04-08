@@ -32,6 +32,9 @@ const dealSchema = z.object({
   probability: z.string(),
   expectedClose: z.string(),
   notes: z.string(),
+  agreedFees: z.string(),
+  nextHearing: z.string(),
+  internalNotes: z.string(),
 });
 
 type DealFormData = z.infer<typeof dealSchema>;
@@ -70,6 +73,9 @@ export function DealForm({ open, onClose }: DealFormProps) {
       probability: "50",
       expectedClose: "",
       notes: "",
+      agreedFees: "",
+      nextHearing: "",
+      internalNotes: "",
     },
   });
 
@@ -82,6 +88,9 @@ export function DealForm({ open, onClose }: DealFormProps) {
           ...data,
           value: Math.round(parseFloat(data.value || "0") * 100),
           probability: parseInt(data.probability || "0"),
+          agreedFees: data.agreedFees ? parseFloat(data.agreedFees) : null,
+          nextHearing: data.nextHearing || null,
+          internalNotes: data.internalNotes || null,
         }),
       });
 
@@ -98,7 +107,7 @@ export function DealForm({ open, onClose }: DealFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nuevo Deal</DialogTitle>
         </DialogHeader>
@@ -114,7 +123,7 @@ export function DealForm({ open, onClose }: DealFormProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="deal-value">Valor (MXN)</Label>
+              <Label htmlFor="deal-value">Valor (ARS)</Label>
               <Input
                 id="deal-value"
                 type="number"
@@ -184,6 +193,30 @@ export function DealForm({ open, onClose }: DealFormProps) {
           <div className="space-y-2">
             <Label htmlFor="deal-notes">Notas</Label>
             <Textarea id="deal-notes" {...register("notes")} rows={2} />
+          </div>
+
+          <div className="border-t pt-4 mt-4">
+            <p className="text-sm font-medium text-muted-foreground mb-3">Datos juridicos</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="agreedFees">Honorarios acordados (ARS)</Label>
+                <Input
+                  id="agreedFees"
+                  type="number"
+                  step="0.01"
+                  {...register("agreedFees")}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nextHearing">Proxima audiencia</Label>
+                <Input id="nextHearing" type="date" {...register("nextHearing")} />
+              </div>
+            </div>
+            <div className="space-y-2 mt-3">
+              <Label htmlFor="internalNotes">Notas internas del caso</Label>
+              <Textarea id="internalNotes" {...register("internalNotes")} rows={2} placeholder="Notas confidenciales del caso..." />
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

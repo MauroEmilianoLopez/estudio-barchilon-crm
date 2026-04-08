@@ -23,6 +23,9 @@ import {
   MessageCircle,
   Copy,
   Check,
+  Scale,
+  Hash,
+  Landmark,
 } from "lucide-react";
 import { formatCurrency, formatDate, formatRelativeDate, cleanPhoneForWhatsApp } from "@/lib/constants";
 import { ACTIVITY_TYPE_CONFIG, SOURCE_LABELS } from "@/lib/constants";
@@ -37,6 +40,15 @@ const activityIcons: Record<string, typeof Phone> = {
   follow_up: Clock,
 };
 
+const CASE_TYPE_LABELS: Record<string, string> = {
+  civil: "Civil",
+  laboral: "Laboral",
+  familia: "Familia",
+  penal: "Penal",
+  comercial: "Comercial",
+  otro: "Otro",
+};
+
 interface ContactDetailClientProps {
   contact: {
     id: string;
@@ -48,6 +60,10 @@ interface ContactDetailClientProps {
     temperature: string;
     score: number;
     notes: string | null;
+    caseType: string | null;
+    caseNumber: string | null;
+    court: string | null;
+    caseStartDate: number | Date | null;
     createdAt: number | Date;
   };
   deals: Array<{
@@ -240,6 +256,35 @@ export function ContactDetailClient({
                 <p className="text-sm text-muted-foreground">{contact.notes}</p>
               </div>
             )}
+            {(contact.caseType || contact.caseNumber || contact.court || contact.caseStartDate) && (
+              <div className="pt-2 border-t space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Datos del caso</p>
+                {contact.caseType && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Scale className="h-4 w-4 text-muted-foreground" />
+                    <span>{CASE_TYPE_LABELS[contact.caseType] || contact.caseType}</span>
+                  </div>
+                )}
+                {contact.caseNumber && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Hash className="h-4 w-4 text-muted-foreground" />
+                    <span>Exp. {contact.caseNumber}</span>
+                  </div>
+                )}
+                {contact.court && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Landmark className="h-4 w-4 text-muted-foreground" />
+                    <span>{contact.court}</span>
+                  </div>
+                )}
+                {contact.caseStartDate && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span>Inicio: {formatDate(contact.caseStartDate)}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -359,6 +404,12 @@ export function ContactDetailClient({
           source: contact.source,
           temperature: contact.temperature as "cold" | "warm" | "hot",
           notes: contact.notes || "",
+          caseType: contact.caseType || "",
+          caseNumber: contact.caseNumber || "",
+          court: contact.court || "",
+          caseStartDate: contact.caseStartDate
+            ? new Date(typeof contact.caseStartDate === "number" ? contact.caseStartDate * 1000 : contact.caseStartDate).toISOString().split("T")[0]
+            : "",
         }}
       />
 
