@@ -94,14 +94,14 @@ export function DealForm({ open, onClose }: DealFormProps) {
         }),
       });
 
-      if (!res.ok) throw new Error("Error al crear deal");
+      if (!res.ok) throw new Error("Error al crear caso");
 
-      toast.success("Deal creado exitosamente");
+      toast.success("Caso creado exitosamente");
       reset();
       onClose();
       router.refresh();
     } catch {
-      toast.error("Error al crear el deal");
+      toast.error("Error al crear el caso");
     }
   };
 
@@ -109,7 +109,7 @@ export function DealForm({ open, onClose }: DealFormProps) {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nuevo Deal</DialogTitle>
+          <DialogTitle>Nuevo Caso</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -224,7 +224,7 @@ export function DealForm({ open, onClose }: DealFormProps) {
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting} className="cursor-pointer">
-              {isSubmitting ? "Creando..." : "Crear Deal"}
+              {isSubmitting ? "Creando..." : "Crear Caso"}
             </Button>
           </div>
         </form>

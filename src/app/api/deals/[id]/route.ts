@@ -13,7 +13,7 @@ export async function GET(
 
   if (!deal) {
     return NextResponse.json(
-      { error: "Deal no encontrado" },
+      { error: "Caso no encontrado" },
       { status: 404 }
     );
   }
@@ -38,7 +38,7 @@ export async function PUT(
 
   if (!existing) {
     return NextResponse.json(
-      { error: "Deal no encontrado" },
+      { error: "Caso no encontrado" },
       { status: 404 }
     );
   }
@@ -83,7 +83,7 @@ export async function DELETE(
 
   if (!existing) {
     return NextResponse.json(
-      { error: "Deal no encontrado" },
+      { error: "Caso no encontrado" },
       { status: 404 }
     );
   }

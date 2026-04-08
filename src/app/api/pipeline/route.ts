@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest) {
   if (body.dealId && body.stageId) {
     const [existing] = await db.select().from(deals).where(eq(deals.id, body.dealId));
     if (!existing) {
-      return NextResponse.json({ error: "Deal no encontrado" }, { status: 404 });
+      return NextResponse.json({ error: "Caso no encontrado" }, { status: 404 });
     }
 
     const [result] = await db
@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "No se pueden reemplazar etapas cuando hay deals activos. Elimina los deals primero.",
+            "No se pueden reemplazar etapas cuando hay casos activos. Elimina los casos primero.",
         },
         { status: 400 }
       );

@@ -81,16 +81,16 @@ export async function POST() {
         </div>
         <div style="flex: 1; background: #f1f5f9; border-radius: 8px; padding: 16px; text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #1e293b;">${activeDeals.length}</div>
-          <div style="font-size: 12px; color: #64748b;">Deals activos</div>
+          <div style="font-size: 12px; color: #64748b;">Casos activos</div>
         </div>
         <div style="flex: 1; background: #f1f5f9; border-radius: 8px; padding: 16px; text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #2563eb;">${formatCurrency(pipelineValue)}</div>
-          <div style="font-size: 12px; color: #64748b;">En pipeline</div>
+          <div style="font-size: 12px; color: #64748b;">Honorarios en curso</div>
         </div>
       </div>
 
       ${hotLeads.length > 0 ? `
-        <h3 style="color: #1e293b; font-size: 14px;">Leads calientes (${hotLeads.length})</h3>
+        <h3 style="color: #1e293b; font-size: 14px;">Casos urgentes (${hotLeads.length})</h3>
         <ul style="color: #334155; font-size: 14px; padding-left: 20px;">
           ${hotLeads.map((c) => `<li>${c.name}${c.company ? ` — ${c.company}` : ""}</li>`).join("")}
         </ul>
@@ -114,7 +114,7 @@ export async function POST() {
       body: JSON.stringify({
         from: process.env.DIGEST_FROM || "Estudio Barchilon <onboarding@resend.dev>",
         to: [email],
-        subject: `CRM Digest: ${overdue.length > 0 ? `${overdue.length} vencidos` : `${activeDeals.length} deals activos`}`,
+        subject: `CRM Digest: ${overdue.length > 0 ? `${overdue.length} vencidos` : `${activeDeals.length} casos activos`}`,
         html,
       }),
     });

@@ -55,7 +55,7 @@ export default async function PipelinePage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Pipeline</h1>
         <p className="text-muted-foreground">
-          Arrastra y suelta deals entre etapas
+          Arrastra y suelta casos entre etapas
         </p>
       </div>
 

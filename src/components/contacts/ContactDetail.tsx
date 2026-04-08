@@ -292,12 +292,12 @@ export function ContactDetailClient({
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
-              Deals ({deals.length})
+              Casos ({deals.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {deals.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Sin deals</p>
+              <p className="text-sm text-muted-foreground">Sin casos</p>
             ) : (
               <div className="space-y-3">
                 {deals.map((deal) => (

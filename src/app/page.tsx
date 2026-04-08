@@ -70,7 +70,7 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Resumen de tu pipeline de ventas
+          Resumen del estudio
         </p>
       </div>
 

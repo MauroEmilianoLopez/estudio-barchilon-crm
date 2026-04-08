@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: `Error al crear deal: ${msg}` },
+      { error: `Error al crear caso: ${msg}` },
       { status: 500 }
     );
   }
