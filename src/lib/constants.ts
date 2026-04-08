@@ -35,9 +35,9 @@ export const ACTIVITY_TYPE_CONFIG: Record<
 };
 
 export function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("es-MX", {
+  return new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "MXN",
+    currency: "ARS",
   }).format(cents / 100);
 }
 
@@ -55,7 +55,7 @@ function toDate(date: Date | number): Date {
 export function formatDate(date: Date | number | null): string {
   if (!date) return "-";
   const d = toDate(date);
-  return new Intl.DateTimeFormat("es-MX", {
+  return new Intl.DateTimeFormat("es-AR", {
     day: "numeric",
     month: "short",
     year: "numeric",

@@ -13,9 +13,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Auto-CRM - Tu CRM con Inteligencia Artificial",
+  title: "Estudio de Abril Barchilon - CRM",
   description:
-    "CRM conversacional con pipeline de ventas, clasificacion automatica de leads y seguimiento inteligente. Construido con Claude Code.",
+    "CRM del Estudio de Abril Barchilon. Pipeline de casos, clasificacion de clientes y seguimiento inteligente.",
 };
 
 export default function RootLayout({
