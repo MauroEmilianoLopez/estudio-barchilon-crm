@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     await db.insert(activities)
       .values({
         type: "note",
-        description: `Lead recibido via webhook${fields.company ? ` (${fields.company})` : ""}`,
+        description: `Cliente recibido via webhook${fields.company ? ` (${fields.company})` : ""}`,
         contactId: contact.id,
         createdAt: now,
       });

@@ -159,7 +159,7 @@ export function ContactForm({ open, onClose, initialData }: ContactFormProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Temperatura</Label>
+              <Label>Estado</Label>
               <Select
                 value={watch("temperature")}
                 onValueChange={(v) =>
@@ -170,9 +170,9 @@ export function ContactForm({ open, onClose, initialData }: ContactFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cold">Frio</SelectItem>
-                  <SelectItem value="warm">Tibio</SelectItem>
-                  <SelectItem value="hot">Caliente</SelectItem>
+                  <SelectItem value="cold">Inactivo</SelectItem>
+                  <SelectItem value="warm">En curso</SelectItem>
+                  <SelectItem value="hot">Urgente</SelectItem>
                 </SelectContent>
               </Select>
             </div>

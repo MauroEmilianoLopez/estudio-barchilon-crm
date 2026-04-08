@@ -45,7 +45,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
       <EmptyState
         icon={Users}
         title="No hay contactos"
-        description="Agrega tu primer contacto para comenzar a gestionar tus casos."
+        description="Agrega tu primer cliente para comenzar a gestionar tus casos."
         actionLabel="Agregar contacto"
         onAction={() => router.push("/contacts?new=true")}
       />
@@ -73,7 +73,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
               onClick={() => setFilterTemp(temp)}
               className="cursor-pointer"
             >
-              {temp === "" ? "Todos" : temp === "hot" ? "Caliente" : temp === "warm" ? "Tibio" : "Frio"}
+              {temp === "" ? "Todos" : temp === "hot" ? "Urgente" : temp === "warm" ? "En curso" : "Inactivo"}
             </Button>
           ))}
           <Button
@@ -95,8 +95,8 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
               <TableHead>Nombre</TableHead>
               <TableHead className="hidden sm:table-cell">Empresa</TableHead>
               <TableHead className="hidden md:table-cell">Fuente</TableHead>
-              <TableHead>Temperatura</TableHead>
-              <TableHead className="hidden md:table-cell">Score</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="hidden md:table-cell">Prioridad</TableHead>
               <TableHead className="hidden lg:table-cell">Fecha</TableHead>
             </TableRow>
           </TableHeader>

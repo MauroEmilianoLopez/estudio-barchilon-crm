@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
       "Telefono",
       "Empresa",
       "Fuente",
-      "Temperatura",
-      "Score",
+      "Estado",
+      "Prioridad",
       "Notas",
       "Fecha de creacion",
     ];
@@ -51,10 +51,10 @@ export async function GET(request: NextRequest) {
       c.company || "",
       SOURCE_LABELS[c.source as LeadSource] || c.source,
       c.temperature === "hot"
-        ? "Caliente"
+        ? "Urgente"
         : c.temperature === "warm"
-          ? "Tibio"
-          : "Frio",
+          ? "En curso"
+          : "Inactivo",
       String(c.score),
       c.notes || "",
       formatDate(c.createdAt),

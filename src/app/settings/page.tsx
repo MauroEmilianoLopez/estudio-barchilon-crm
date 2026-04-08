@@ -41,7 +41,7 @@ export default function SettingsPage() {
     },
     {
       name: "/add-lead",
-      description: "Agregar un lead de forma conversacional",
+      description: "Agregar un cliente de forma conversacional",
     },
     {
       name: "/analyze-pipeline",
@@ -158,7 +158,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Recibe leads automaticamente desde formularios, landing pages, o cualquier herramienta que soporte webhooks.
+              Recibe clientes automaticamente desde formularios, landing pages, o cualquier herramienta que soporte webhooks.
             </p>
             <div className="space-y-3">
               <div className="flex items-center gap-2">

@@ -4,9 +4,9 @@ export const TEMPERATURE_CONFIG: Record<
   Temperature,
   { label: string; color: string; bgColor: string }
 > = {
-  cold: { label: "Frio", color: "#64748b", bgColor: "#f1f5f9" },
-  warm: { label: "Tibio", color: "#ea580c", bgColor: "#fff7ed" },
-  hot: { label: "Caliente", color: "#dc2626", bgColor: "#fef2f2" },
+  cold: { label: "Inactivo", color: "#64748b", bgColor: "#f1f5f9" },
+  warm: { label: "En curso", color: "#ea580c", bgColor: "#fff7ed" },
+  hot: { label: "Urgente", color: "#dc2626", bgColor: "#fef2f2" },
 };
 
 export const SOURCE_LABELS: Record<LeadSource, string> = {
