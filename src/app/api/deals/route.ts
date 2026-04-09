@@ -14,6 +14,8 @@ export async function GET() {
       expectedClose: deals.expectedClose,
       probability: deals.probability,
       notes: deals.notes,
+      agreedFees: deals.agreedFees,
+      paidAmount: deals.paidAmount,
       createdAt: deals.createdAt,
       updatedAt: deals.updatedAt,
       contactName: contacts.name,

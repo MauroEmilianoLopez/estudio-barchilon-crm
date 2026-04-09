@@ -20,13 +20,40 @@ import { DealForm } from "@/components/deals/DealForm";
 interface DealRow {
   id: string;
   title: string;
-  value: number;
-  probability: number;
   contactName: string | null;
   stageName: string | null;
   stageColor: string | null;
+  agreedFees: number | null;
+  paidAmount: number;
   expectedClose: number | Date | null;
-  createdAt: number | Date;
+}
+
+function PaymentBadge({ agreedFees, paidAmount }: { agreedFees: number | null; paidAmount: number }) {
+  if (!agreedFees || agreedFees === 0) {
+    return <span className="text-xs text-muted-foreground">-</span>;
+  }
+  if (paidAmount >= agreedFees) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+        Cancelado
+      </span>
+    );
+  }
+  if (paidAmount > 0) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+        Pago parcial
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+      Sin pago
+    </span>
+  );
 }
 
 export default function DealsPage() {
@@ -89,10 +116,10 @@ export default function DealsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Titulo</TableHead>
-                <TableHead>Contacto</TableHead>
-                <TableHead>Valor</TableHead>
+                <TableHead>Cliente</TableHead>
                 <TableHead>Etapa</TableHead>
-                <TableHead className="hidden md:table-cell">Probabilidad</TableHead>
+                <TableHead>Honorarios pactados</TableHead>
+                <TableHead>Estado de pago</TableHead>
                 <TableHead className="hidden lg:table-cell">Cierre est.</TableHead>
               </TableRow>
             </TableHeader>
@@ -105,9 +132,6 @@ export default function DealsPage() {
                 >
                   <TableCell className="font-medium">{deal.title}</TableCell>
                   <TableCell>{deal.contactName || "-"}</TableCell>
-                  <TableCell className="font-semibold text-primary">
-                    {formatCurrency(deal.value)}
-                  </TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"
@@ -119,8 +143,11 @@ export default function DealsPage() {
                       {deal.stageName}
                     </Badge>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {deal.probability}%
+                  <TableCell className="font-semibold text-primary">
+                    {deal.agreedFees ? formatCurrency(deal.agreedFees) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <PaymentBadge agreedFees={deal.agreedFees} paidAmount={deal.paidAmount ?? 0} />
                   </TableCell>
                   <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                     {formatDate(deal.expectedClose)}
