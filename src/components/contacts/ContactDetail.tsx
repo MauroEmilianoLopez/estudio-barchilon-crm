@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   Mail,
   Phone,
-  Building2,
   Calendar,
   FileText,
   Clock,
@@ -28,7 +27,7 @@ import {
   Landmark,
 } from "lucide-react";
 import { formatCurrency, formatDate, formatRelativeDate, cleanPhoneForWhatsApp } from "@/lib/constants";
-import { ACTIVITY_TYPE_CONFIG, SOURCE_LABELS } from "@/lib/constants";
+import { ACTIVITY_TYPE_CONFIG, SOURCE_LABELS, CASE_TYPE_LABELS } from "@/lib/constants";
 import { toast } from "sonner";
 import type { Temperature, ActivityType, LeadSource } from "@/types";
 
@@ -38,15 +37,6 @@ const activityIcons: Record<string, typeof Phone> = {
   meeting: Users,
   note: FileText,
   follow_up: Clock,
-};
-
-const CASE_TYPE_LABELS: Record<string, string> = {
-  civil: "Civil",
-  laboral: "Laboral",
-  familia: "Familia",
-  penal: "Penal",
-  comercial: "Comercial",
-  otro: "Otro",
 };
 
 interface ContactDetailClientProps {
@@ -153,9 +143,21 @@ export function ContactDetailClient({
             <h1 className="text-2xl font-bold">{contact.name}</h1>
             <StatusBadge temperature={contact.temperature as Temperature} />
           </div>
-          <p className="text-muted-foreground">
-            Prioridad: {contact.score}/100 &middot;{" "}
-            {SOURCE_LABELS[contact.source as LeadSource] || contact.source}
+          <p className="text-muted-foreground flex items-center gap-2">
+            {contact.score >= 70 ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />Urgente
+              </span>
+            ) : contact.score >= 40 ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />Normal
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />Sin prisa
+              </span>
+            )}
+            &middot; {SOURCE_LABELS[contact.source as LeadSource] || contact.source}
           </p>
         </div>
         <div className="flex gap-2">
@@ -241,10 +243,10 @@ export function ContactDetailClient({
                 </div>
               </div>
             )}
-            {contact.company && (
+            {contact.caseType && (
               <div className="flex items-center gap-2 text-sm">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <span>{contact.company}</span>
+                <Scale className="h-4 w-4 text-muted-foreground" />
+                <span>Tipo de causa: {CASE_TYPE_LABELS[contact.caseType] || contact.caseType}</span>
               </div>
             )}
             <div className="flex items-center gap-2 text-sm">

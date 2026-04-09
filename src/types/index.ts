@@ -1,18 +1,12 @@
 export type Temperature = "cold" | "warm" | "hot";
 
-export type ActivityType = "call" | "email" | "meeting" | "note" | "follow_up";
+export type ActivityType = "audiencia" | "escrito" | "llamada" | "reunion" | "oficio" | "notificacion" | "nota";
 
 export type LeadSource =
-  | "website"
-  | "whatsapp"
   | "referido"
+  | "consulta_espontanea"
+  | "cliente_recurrente"
   | "redes_sociales"
-  | "llamada_fria"
-  | "email"
-  | "formulario"
-  | "evento"
-  | "import"
-  | "webhook"
   | "otro";
 
 export type CaseType = "civil" | "laboral" | "familia" | "penal" | "comercial" | "otro";

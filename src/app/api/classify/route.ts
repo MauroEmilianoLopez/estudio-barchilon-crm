@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
           notes: contact.notes || undefined,
         },
         contactActivities.map((a) => ({
-          type: a.type as "call" | "email" | "meeting" | "note" | "follow_up",
+          type: a.type as "audiencia" | "escrito" | "llamada" | "reunion" | "oficio" | "notificacion" | "nota",
           description: a.description,
           date: a.createdAt
             ? new Date(

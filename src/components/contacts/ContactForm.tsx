@@ -128,11 +128,6 @@ export function ContactForm({ open, onClose, initialData }: ContactFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="company">Empresa</Label>
-            <Input id="company" {...register("company")} placeholder="Nombre de la empresa" />
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Fuente</Label>
@@ -144,16 +139,10 @@ export function ContactForm({ open, onClose, initialData }: ContactFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="website">Sitio web</SelectItem>
-                  <SelectItem value="whatsapp">WhatsApp</SelectItem>
                   <SelectItem value="referido">Referido</SelectItem>
+                  <SelectItem value="consulta_espontanea">Consulta espontanea</SelectItem>
+                  <SelectItem value="cliente_recurrente">Cliente recurrente</SelectItem>
                   <SelectItem value="redes_sociales">Redes sociales</SelectItem>
-                  <SelectItem value="llamada_fria">Llamada fria</SelectItem>
-                  <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="formulario">Formulario</SelectItem>
-                  <SelectItem value="evento">Evento</SelectItem>
-                  <SelectItem value="import">Importado</SelectItem>
-                  <SelectItem value="webhook">Webhook</SelectItem>
                   <SelectItem value="otro">Otro</SelectItem>
                 </SelectContent>
               </Select>
@@ -182,7 +171,7 @@ export function ContactForm({ open, onClose, initialData }: ContactFormProps) {
             <p className="text-sm font-medium text-muted-foreground mb-3">Datos del caso</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Tipo de caso</Label>
+                <Label>Tipo de causa</Label>
                 <Select
                   value={watch("caseType")}
                   onValueChange={(v) => v && setValue("caseType", v)}

@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       "Nombre",
       "Email",
       "Telefono",
-      "Empresa",
+      "Tipo de causa",
       "Fuente",
       "Estado",
       "Prioridad",
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       c.name,
       c.email || "",
       c.phone || "",
-      c.company || "",
+      c.caseType ? ({ civil: "Civil", laboral: "Laboral", penal: "Penal", familia: "Familia", comercial: "Comercial", otro: "Otro" }[c.caseType] || c.caseType) : "",
       SOURCE_LABELS[c.source as LeadSource] || c.source,
       c.temperature === "hot"
         ? "Urgente"

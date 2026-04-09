@@ -9,6 +9,7 @@ import {
   Activity,
   Settings,
   Briefcase,
+  CalendarClock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ const navItems = [
   { href: "/pipeline", label: "Pipeline", icon: Kanban },
   { href: "/contacts", label: "Contactos", icon: Users },
   { href: "/deals", label: "Casos", icon: Briefcase },
+  { href: "/agenda", label: "Agenda", icon: CalendarClock },
   { href: "/activities", label: "Actividades", icon: Activity },
   { href: "/settings", label: "Configuracion", icon: Settings },
 ];

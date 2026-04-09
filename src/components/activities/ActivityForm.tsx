@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 const activitySchema = z.object({
-  type: z.enum(["call", "email", "meeting", "note", "follow_up"]),
+  type: z.enum(["audiencia", "escrito", "llamada", "reunion", "oficio", "notificacion", "nota"]),
   description: z.string().min(1, "La descripcion es requerida"),
   contactId: z.string().min(1, "El contacto es requerido"),
   dealId: z.string(),
@@ -68,7 +68,7 @@ export function ActivityForm({
   } = useForm<ActivityFormData>({
     resolver: zodResolver(activitySchema),
     defaultValues: {
-      type: "note",
+      type: "nota",
       description: "",
       contactId: preselectedContactId || "",
       dealId: preselectedDealId || "",
@@ -121,11 +121,13 @@ export function ActivityForm({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="call">Llamada</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="meeting">Reunion</SelectItem>
-                <SelectItem value="note">Nota</SelectItem>
-                <SelectItem value="follow_up">Seguimiento</SelectItem>
+                <SelectItem value="audiencia">Audiencia</SelectItem>
+                <SelectItem value="escrito">Presentacion de escrito</SelectItem>
+                <SelectItem value="llamada">Llamada al cliente</SelectItem>
+                <SelectItem value="reunion">Reunion presencial</SelectItem>
+                <SelectItem value="oficio">Oficio enviado</SelectItem>
+                <SelectItem value="notificacion">Notificacion recibida</SelectItem>
+                <SelectItem value="nota">Nota interna</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -171,7 +173,7 @@ export function ActivityForm({
             </div>
           )}
 
-          {watch("type") === "follow_up" && (
+          {watch("type") === "audiencia" && (
             <div className="space-y-2">
               <Label>Fecha programada</Label>
               <Input type="datetime-local" {...register("scheduledAt")} />

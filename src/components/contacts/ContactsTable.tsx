@@ -93,7 +93,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
-              <TableHead className="hidden sm:table-cell">Empresa</TableHead>
+              <TableHead className="hidden sm:table-cell">Tipo de causa</TableHead>
               <TableHead className="hidden md:table-cell">Fuente</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="hidden md:table-cell">Prioridad</TableHead>
@@ -116,7 +116,9 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
                   </div>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  {contact.company || "-"}
+                  {contact.caseType
+                    ? ({ civil: "Civil", laboral: "Laboral", penal: "Penal", familia: "Familia", comercial: "Comercial", otro: "Otro" }[contact.caseType] || contact.caseType)
+                    : "-"}
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-sm">
                   {SOURCE_LABELS[contact.source as LeadSource] || contact.source}
@@ -125,17 +127,22 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
                   <StatusBadge temperature={contact.temperature as Temperature} size="sm" />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <div className="flex items-center gap-1">
-                    <div className="h-2 w-16 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{ width: `${contact.score}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {contact.score}
+                  {contact.score >= 70 ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                      Urgente
                     </span>
-                  </div>
+                  ) : contact.score >= 40 ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
+                      Normal
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      Sin prisa
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                   {formatDate(contact.createdAt)}

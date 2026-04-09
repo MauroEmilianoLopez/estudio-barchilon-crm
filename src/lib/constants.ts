@@ -10,16 +10,10 @@ export const TEMPERATURE_CONFIG: Record<
 };
 
 export const SOURCE_LABELS: Record<LeadSource, string> = {
-  website: "Sitio web",
-  whatsapp: "WhatsApp",
   referido: "Referido",
+  consulta_espontanea: "Consulta espontanea",
+  cliente_recurrente: "Cliente recurrente",
   redes_sociales: "Redes sociales",
-  llamada_fria: "Llamada fria",
-  email: "Email",
-  formulario: "Formulario",
-  evento: "Evento",
-  import: "Importado",
-  webhook: "Webhook",
   otro: "Otro",
 };
 
@@ -27,11 +21,22 @@ export const ACTIVITY_TYPE_CONFIG: Record<
   ActivityType,
   { label: string; icon: string }
 > = {
-  call: { label: "Llamada", icon: "Phone" },
-  email: { label: "Email", icon: "Mail" },
-  meeting: { label: "Reunion", icon: "Users" },
-  note: { label: "Nota", icon: "FileText" },
-  follow_up: { label: "Seguimiento", icon: "Clock" },
+  audiencia: { label: "Audiencia", icon: "Gavel" },
+  escrito: { label: "Presentacion de escrito", icon: "FileText" },
+  llamada: { label: "Llamada al cliente", icon: "Phone" },
+  reunion: { label: "Reunion presencial", icon: "Users" },
+  oficio: { label: "Oficio enviado", icon: "Send" },
+  notificacion: { label: "Notificacion recibida", icon: "Bell" },
+  nota: { label: "Nota interna", icon: "StickyNote" },
+};
+
+export const CASE_TYPE_LABELS: Record<string, string> = {
+  civil: "Civil",
+  laboral: "Laboral",
+  penal: "Penal",
+  familia: "Familia",
+  comercial: "Comercial",
+  otro: "Otro",
 };
 
 export function formatCurrency(cents: number): string {
