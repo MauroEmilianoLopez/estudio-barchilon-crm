@@ -6,11 +6,50 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, DollarSign, Percent, FileText, Gavel, Scale } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, FileText, Gavel, Scale, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/constants";
 import { ACTIVITY_TYPE_CONFIG } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
+
+function PaymentStatus({ agreedFees, paidAmount }: { agreedFees: number | null; paidAmount: number }) {
+  if (!agreedFees || agreedFees === 0) return null;
+
+  if (paidAmount >= agreedFees) {
+    return (
+      <div className="flex items-center gap-2">
+        <CheckCircle className="h-5 w-5 text-green-600" />
+        <div>
+          <p className="text-lg font-bold text-green-600">Cancelado</p>
+          <p className="text-xs text-muted-foreground">Honorarios abonados en su totalidad</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (paidAmount > 0) {
+    const percent = Math.round((paidAmount / agreedFees) * 100);
+    return (
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="h-5 w-5 text-yellow-600" />
+        <div>
+          <p className="text-lg font-bold text-yellow-600">Pago parcial</p>
+          <p className="text-xs text-muted-foreground">{percent}% abonado — Resta {formatCurrency(agreedFees - paidAmount)}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <XCircle className="h-5 w-5 text-red-600" />
+      <div>
+        <p className="text-lg font-bold text-red-600">Sin pago</p>
+        <p className="text-xs text-muted-foreground">Pendiente: {formatCurrency(agreedFees)}</p>
+      </div>
+    </div>
+  );
+}
 
 export default async function DealDetailPage({
   params,
@@ -69,86 +108,38 @@ export default async function DealDetailPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <DollarSign className="h-4 w-4" />
-              Valor
+              <Scale className="h-4 w-4" />
+              Honorarios pactados
             </div>
-            <p className="text-xl font-bold text-primary">
-              {formatCurrency(deal.value)}
+            <p className="text-xl font-bold">
+              {deal.agreedFees != null ? formatCurrency(deal.agreedFees) : "-"}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <Percent className="h-4 w-4" />
-              Probabilidad
+              <DollarSign className="h-4 w-4" />
+              Cuotas pagas
             </div>
-            <p className="text-xl font-bold">{deal.probability}%</p>
+            <p className="text-xl font-bold">
+              {formatCurrency(deal.paidAmount)}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
               <Calendar className="h-4 w-4" />
-              Cierre estimado
+              Fecha estimada de cierre
             </div>
             <p className="text-xl font-bold">
               {formatDate(deal.expectedClose)}
             </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <DollarSign className="h-4 w-4" />
-              Valor ponderado
-            </div>
-            <p className="text-xl font-bold">
-              {formatCurrency(Math.round(deal.value * (deal.probability / 100)))}
-            </p>
-          </CardContent>
-        </Card>
-        {deal.agreedFees != null && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                <Scale className="h-4 w-4" />
-                Honorarios
-              </div>
-              <p className="text-xl font-bold">
-                {formatCurrency(deal.agreedFees)}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-              <DollarSign className="h-4 w-4" />
-              Monto pagado
-            </div>
-            <p className="text-xl font-bold">
-              {formatCurrency(deal.paidAmount)}
-            </p>
-            {deal.agreedFees != null && deal.agreedFees > 0 && (
-              <p className={`text-xs mt-1 font-medium ${
-                deal.paidAmount >= deal.agreedFees
-                  ? "text-green-600"
-                  : deal.paidAmount > 0
-                    ? "text-yellow-600"
-                    : "text-red-600"
-              }`}>
-                {deal.paidAmount >= deal.agreedFees
-                  ? "Al dia"
-                  : deal.paidAmount > 0
-                    ? "Pago parcial"
-                    : "Sin pago"}
-              </p>
-            )}
           </CardContent>
         </Card>
         {deal.nextHearing && (
@@ -156,7 +147,7 @@ export default async function DealDetailPage({
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                 <Gavel className="h-4 w-4" />
-                Proxima audiencia
+                Proxima fecha de actuacion
               </div>
               <p className="text-xl font-bold">
                 {formatDate(deal.nextHearing)}
@@ -165,6 +156,30 @@ export default async function DealDetailPage({
           </Card>
         )}
       </div>
+
+      {deal.agreedFees != null && deal.agreedFees > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+              <DollarSign className="h-4 w-4" />
+              Estado de pago
+            </div>
+            <PaymentStatus agreedFees={deal.agreedFees} paidAmount={deal.paidAmount} />
+            <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  deal.paidAmount >= deal.agreedFees
+                    ? "bg-green-500"
+                    : deal.paidAmount > 0
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
+                }`}
+                style={{ width: `${Math.min(100, Math.round((deal.paidAmount / deal.agreedFees) * 100))}%` }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {deal.notes && (
@@ -189,7 +204,7 @@ export default async function DealDetailPage({
           </Card>
         )}
 
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">
               Actividades ({dealActivities.length})
@@ -198,7 +213,7 @@ export default async function DealDetailPage({
           <CardContent>
             {dealActivities.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No hay actividades registradas para este deal
+                No hay actividades registradas para este caso
               </p>
             ) : (
               <div className="space-y-3">

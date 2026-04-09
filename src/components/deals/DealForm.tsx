@@ -26,10 +26,8 @@ import { toast } from "sonner";
 
 const dealSchema = z.object({
   title: z.string().min(1, "El titulo es requerido"),
-  value: z.string(),
-  contactId: z.string().min(1, "El contacto es requerido"),
+  contactId: z.string().min(1, "El cliente es requerido"),
   stageId: z.string(),
-  probability: z.string(),
   expectedClose: z.string(),
   notes: z.string(),
   agreedFees: z.string(),
@@ -68,10 +66,8 @@ export function DealForm({ open, onClose }: DealFormProps) {
     resolver: zodResolver(dealSchema),
     defaultValues: {
       title: "",
-      value: "",
       contactId: "",
       stageId: "",
-      probability: "50",
       expectedClose: "",
       notes: "",
       agreedFees: "",
@@ -83,15 +79,18 @@ export function DealForm({ open, onClose }: DealFormProps) {
 
   const onSubmit = async (data: DealFormData) => {
     try {
+      const agreedFees = data.agreedFees ? parseFloat(data.agreedFees) : null;
+      const paidAmount = data.paidAmount ? parseFloat(data.paidAmount) : 0;
+
       const res = await fetch("/api/deals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          value: Math.round(parseFloat(data.value || "0") * 100),
-          probability: parseInt(data.probability || "0"),
-          agreedFees: data.agreedFees ? parseFloat(data.agreedFees) : null,
-          paidAmount: data.paidAmount ? parseFloat(data.paidAmount) : 0,
+          value: agreedFees != null ? Math.round(agreedFees * 100) : 0,
+          probability: 0,
+          agreedFees,
+          paidAmount,
           nextHearing: data.nextHearing || null,
           internalNotes: data.internalNotes || null,
         }),
@@ -117,43 +116,21 @@ export function DealForm({ open, onClose }: DealFormProps) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="deal-title">Titulo *</Label>
-            <Input id="deal-title" {...register("title")} placeholder="Ej: Servicio Premium - Empresa X" />
+            <Label htmlFor="deal-title">Titulo del caso *</Label>
+            <Input id="deal-title" {...register("title")} placeholder="Ej: Sucesion Garcia Lopez" />
             {errors.title && (
               <p className="text-xs text-destructive">{errors.title.message}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="deal-value">Valor (ARS)</Label>
-              <Input
-                id="deal-value"
-                type="number"
-                step="0.01"
-                {...register("value")}
-                placeholder="0.00"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Probabilidad (%)</Label>
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                {...register("probability")}
-              />
-            </div>
-          </div>
-
           <div className="space-y-2">
-            <Label>Contacto *</Label>
+            <Label>Cliente *</Label>
             <Select
               value={watch("contactId")}
               onValueChange={(v) => v && setValue("contactId", v)}
             >
               <SelectTrigger className="cursor-pointer">
-                <SelectValue placeholder="Seleccionar contacto" />
+                <SelectValue placeholder="Seleccionar cliente" />
               </SelectTrigger>
               <SelectContent>
                 {contactsList.map((c) => (
@@ -188,21 +165,16 @@ export function DealForm({ open, onClose }: DealFormProps) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Cierre estimado</Label>
+              <Label>Fecha estimada de cierre</Label>
               <Input type="date" {...register("expectedClose")} />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="deal-notes">Notas</Label>
-            <Textarea id="deal-notes" {...register("notes")} rows={2} />
-          </div>
-
-          <div className="border-t pt-4 mt-4">
-            <p className="text-sm font-medium text-muted-foreground mb-3">Datos juridicos</p>
+          <div className="border-t pt-4 mt-2">
+            <p className="text-sm font-medium text-muted-foreground mb-3">Honorarios y pagos</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="agreedFees">Honorarios acordados (ARS)</Label>
+                <Label htmlFor="agreedFees">Honorarios pactados (ARS)</Label>
                 <Input
                   id="agreedFees"
                   type="number"
@@ -212,7 +184,7 @@ export function DealForm({ open, onClose }: DealFormProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="paidAmount">Monto pagado (ARS)</Label>
+                <Label htmlFor="paidAmount">Cuotas pagas (ARS)</Label>
                 <Input
                   id="paidAmount"
                   type="number"
@@ -222,11 +194,17 @@ export function DealForm({ open, onClose }: DealFormProps) {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <div className="space-y-2">
-                <Label htmlFor="nextHearing">Proxima audiencia</Label>
-                <Input id="nextHearing" type="date" {...register("nextHearing")} />
-              </div>
+          </div>
+
+          <div className="border-t pt-4 mt-2">
+            <p className="text-sm font-medium text-muted-foreground mb-3">Datos del caso</p>
+            <div className="space-y-2">
+              <Label htmlFor="nextHearing">Proxima fecha de actuacion</Label>
+              <Input id="nextHearing" type="date" {...register("nextHearing")} />
+            </div>
+            <div className="space-y-2 mt-3">
+              <Label htmlFor="deal-notes">Notas</Label>
+              <Textarea id="deal-notes" {...register("notes")} rows={2} />
             </div>
             <div className="space-y-2 mt-3">
               <Label htmlFor="internalNotes">Notas internas del caso</Label>

@@ -113,7 +113,7 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
       } catch {
         // Rollback to pre-drag state
         setColumns(columnsSnapshot.current);
-        toast.error("Error al mover el deal. Se revirtio el cambio.");
+        toast.error("Error al mover el caso. Se revirtio el cambio.");
       }
     },
     [columns]
