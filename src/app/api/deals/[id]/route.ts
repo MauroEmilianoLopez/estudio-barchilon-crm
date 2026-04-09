@@ -59,6 +59,9 @@ export async function PUT(
   if (body.agreedFees !== undefined) {
     updateData.agreedFees = body.agreedFees != null ? Math.round(parseFloat(body.agreedFees) * 100) : null;
   }
+  if (body.paidAmount !== undefined) {
+    updateData.paidAmount = body.paidAmount != null ? Math.round(parseFloat(body.paidAmount) * 100) : 0;
+  }
   if (body.nextHearing !== undefined) {
     updateData.nextHearing = body.nextHearing ? new Date(body.nextHearing) : null;
   }

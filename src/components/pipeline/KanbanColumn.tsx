@@ -15,6 +15,8 @@ interface Deal {
   contactName: string | null;
   contactTemperature: string | null;
   probability: number;
+  agreedFees: number | null;
+  paidAmount: number;
 }
 
 interface KanbanColumnProps {
@@ -27,7 +29,7 @@ interface KanbanColumnProps {
 export function KanbanColumn({ id, name, color, deals }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
-  const totalValue = deals.reduce((sum, d) => sum + d.value, 0);
+  const totalValue = deals.reduce((sum, d) => sum + (d.agreedFees || d.value), 0);
 
   return (
     <div

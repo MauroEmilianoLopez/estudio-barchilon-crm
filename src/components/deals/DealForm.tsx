@@ -33,6 +33,7 @@ const dealSchema = z.object({
   expectedClose: z.string(),
   notes: z.string(),
   agreedFees: z.string(),
+  paidAmount: z.string(),
   nextHearing: z.string(),
   internalNotes: z.string(),
 });
@@ -74,6 +75,7 @@ export function DealForm({ open, onClose }: DealFormProps) {
       expectedClose: "",
       notes: "",
       agreedFees: "",
+      paidAmount: "",
       nextHearing: "",
       internalNotes: "",
     },
@@ -89,6 +91,7 @@ export function DealForm({ open, onClose }: DealFormProps) {
           value: Math.round(parseFloat(data.value || "0") * 100),
           probability: parseInt(data.probability || "0"),
           agreedFees: data.agreedFees ? parseFloat(data.agreedFees) : null,
+          paidAmount: data.paidAmount ? parseFloat(data.paidAmount) : 0,
           nextHearing: data.nextHearing || null,
           internalNotes: data.internalNotes || null,
         }),
@@ -208,6 +211,18 @@ export function DealForm({ open, onClose }: DealFormProps) {
                   placeholder="0.00"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="paidAmount">Monto pagado (ARS)</Label>
+                <Input
+                  id="paidAmount"
+                  type="number"
+                  step="0.01"
+                  {...register("paidAmount")}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-3">
               <div className="space-y-2">
                 <Label htmlFor="nextHearing">Proxima audiencia</Label>
                 <Input id="nextHearing" type="date" {...register("nextHearing")} />

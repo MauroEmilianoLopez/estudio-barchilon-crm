@@ -143,6 +143,8 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
                 d.contactTemperature ||
                 (d.contact?.temperature ?? null),
               probability: d.probability,
+              agreedFees: d.agreedFees ?? null,
+              paidAmount: d.paidAmount ?? 0,
             }))}
           />
         ))}
@@ -163,6 +165,8 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
               (activeDeal.contact?.temperature ?? null)
             }
             probability={activeDeal.probability}
+            agreedFees={activeDeal.agreedFees ?? null}
+            paidAmount={activeDeal.paidAmount ?? 0}
           />
         ) : null}
       </DragOverlay>

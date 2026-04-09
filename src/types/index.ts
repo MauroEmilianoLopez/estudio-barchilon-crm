@@ -45,6 +45,7 @@ export interface Deal {
   probability: number; // 0-100
   notes: string | null;
   agreedFees: number | null; // in cents
+  paidAmount: number; // in cents
   nextHearing: Date | null;
   internalNotes: string | null;
   createdAt: Date;

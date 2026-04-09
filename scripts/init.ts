@@ -72,6 +72,7 @@ async function init() {
       probability INTEGER NOT NULL DEFAULT 0,
       notes TEXT,
       agreed_fees INTEGER,
+      paid_amount INTEGER NOT NULL DEFAULT 0,
       next_hearing INTEGER,
       internal_notes TEXT,
       created_at INTEGER NOT NULL,

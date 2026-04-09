@@ -125,6 +125,32 @@ export default async function DealDetailPage({
             </CardContent>
           </Card>
         )}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+              <DollarSign className="h-4 w-4" />
+              Monto pagado
+            </div>
+            <p className="text-xl font-bold">
+              {formatCurrency(deal.paidAmount)}
+            </p>
+            {deal.agreedFees != null && deal.agreedFees > 0 && (
+              <p className={`text-xs mt-1 font-medium ${
+                deal.paidAmount >= deal.agreedFees
+                  ? "text-green-600"
+                  : deal.paidAmount > 0
+                    ? "text-yellow-600"
+                    : "text-red-600"
+              }`}>
+                {deal.paidAmount >= deal.agreedFees
+                  ? "Al dia"
+                  : deal.paidAmount > 0
+                    ? "Pago parcial"
+                    : "Sin pago"}
+              </p>
+            )}
+          </CardContent>
+        </Card>
         {deal.nextHearing && (
           <Card>
             <CardContent className="pt-6">
