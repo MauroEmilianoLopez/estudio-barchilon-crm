@@ -79,6 +79,23 @@ export const activities = sqliteTable("activities", {
     .$defaultFn(() => new Date()),
 });
 
+export const payments = sqliteTable("payments", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  dealId: text("deal_id")
+    .notNull()
+    .references(() => deals.id),
+  date: integer("date", { mode: "timestamp" }).notNull(),
+  amount: integer("amount").notNull(),
+  currency: text("currency").notNull().default("ARS"),
+  paymentMethod: text("payment_method").notNull(),
+  receipt: text("receipt"),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
 export const crmSettings = sqliteTable("crm_settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),

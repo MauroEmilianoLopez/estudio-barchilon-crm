@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { contacts, deals, activities, pipelineStages } from "@/db/schema";
-import { eq, asc, desc } from "drizzle-orm";
+import { contacts, deals, activities, payments, pipelineStages } from "@/db/schema";
+import { eq, asc, desc, gte, sql } from "drizzle-orm";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { PipelineChart } from "@/components/dashboard/PipelineChart";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
@@ -27,6 +27,14 @@ export default async function DashboardPage() {
     return stage?.isWon;
   });
 
+  // Honorarios cobrados este mes
+  const now = new Date();
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const [monthlyResult] = await db
+    .select({ total: sql<number>`COALESCE(SUM(${payments.amount}), 0)` })
+    .from(payments)
+    .where(gte(payments.date, firstOfMonth));
+
   const stats: DashboardStats = {
     totalContacts: allContacts.length,
     activeDeals: activeDeals.length,
@@ -37,6 +45,7 @@ export default async function DashboardPage() {
         ? Math.round((wonDeals.length / allDeals.length) * 100)
         : 0,
     hotLeads: allContacts.filter((c) => c.temperature === "hot").length,
+    collectedThisMonth: Number(monthlyResult.total),
   };
 
   const pipelineData = stages

@@ -112,4 +112,5 @@ export interface DashboardStats {
   wonDealsValue: number;
   conversionRate: number;
   hotLeads: number;
+  collectedThisMonth: number;
 }

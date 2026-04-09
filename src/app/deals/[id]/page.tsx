@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, DollarSign, FileText, Gavel, Scale, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/constants";
 import { ACTIVITY_TYPE_CONFIG } from "@/lib/constants";
+import { PaymentsList } from "@/components/payments/PaymentsList";
 
 export const dynamic = "force-dynamic";
 
@@ -157,31 +158,8 @@ export default async function DealDetailPage({
         )}
       </div>
 
-      {deal.agreedFees != null && deal.agreedFees > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <DollarSign className="h-4 w-4" />
-              Estado de pago
-            </div>
-            <PaymentStatus agreedFees={deal.agreedFees} paidAmount={deal.paidAmount} />
-            <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  deal.paidAmount >= deal.agreedFees
-                    ? "bg-green-500"
-                    : deal.paidAmount > 0
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
-                }`}
-                style={{ width: `${Math.min(100, Math.round((deal.paidAmount / deal.agreedFees) * 100))}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PaymentsList dealId={id} agreedFees={deal.agreedFees} />
         {deal.notes && (
           <Card>
             <CardHeader>

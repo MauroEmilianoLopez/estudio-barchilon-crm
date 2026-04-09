@@ -88,6 +88,16 @@ async function init() {
       completed_at INTEGER,
       created_at INTEGER NOT NULL
     )`,
+    `CREATE TABLE IF NOT EXISTS payments (
+      id TEXT PRIMARY KEY,
+      deal_id TEXT NOT NULL REFERENCES deals(id),
+      date INTEGER NOT NULL,
+      amount INTEGER NOT NULL,
+      currency TEXT NOT NULL DEFAULT 'ARS',
+      payment_method TEXT NOT NULL,
+      receipt TEXT,
+      created_at INTEGER NOT NULL
+    )`,
     `CREATE TABLE IF NOT EXISTS crm_settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
