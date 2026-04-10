@@ -91,35 +91,35 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
       </div>
 
       {/* Mobile: Cards */}
-      <div className="md:hidden space-y-2">
+      <div className="md:hidden space-y-3">
         {filtered.map((contact) => (
           <div
             key={contact.id}
-            className="p-3 rounded-lg border bg-card cursor-pointer hover:shadow-sm transition-shadow"
+            className="p-4 rounded-xl border bg-card cursor-pointer active:bg-muted/50 transition-colors"
             onClick={() => router.push(`/contacts/${contact.id}`)}
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-sm truncate">{contact.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{contact.email || contact.phone || "Sin datos"}</p>
+                <p className="font-semibold text-base truncate">{contact.name}</p>
+                <p className="text-sm text-muted-foreground truncate mt-0.5">{contact.email || contact.phone || "Sin datos"}</p>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex items-center gap-2 shrink-0">
                 <StatusBadge temperature={contact.temperature as Temperature} size="sm" />
                 <WhatsAppCell contact={contact} />
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-3">
               {contact.caseType && (
-                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted">
+                <span className="text-xs font-medium px-2 py-1 rounded bg-muted">
                   {({ civil: "Civil", laboral: "Laboral", penal: "Penal", familia: "Familia", comercial: "Comercial", otro: "Otro" }[contact.caseType] || contact.caseType)}
                 </span>
               )}
               {contact.score >= 70 ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">Urgente</span>
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">Urgente</span>
               ) : contact.score >= 40 ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Normal</span>
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">Normal</span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">Sin prisa</span>
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-700">Sin prisa</span>
               )}
             </div>
           </div>

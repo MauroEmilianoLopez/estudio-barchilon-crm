@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -19,6 +19,14 @@ export const metadata: Metadata = {
     "CRM del Estudio de Abril Barchilon. Pipeline de casos, clasificacion de clientes y seguimiento inteligente.",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,7 +39,7 @@ export default function RootLayout({
           <Sidebar />
           <div className="flex-1 flex flex-col min-h-screen">
             <Header />
-            <main className="flex-1 p-3 md:p-6 bg-background overflow-auto pb-18 md:pb-6">
+            <main className="flex-1 p-3 md:p-6 bg-background overflow-auto pb-20 md:pb-6">
               {children}
             </main>
           </div>

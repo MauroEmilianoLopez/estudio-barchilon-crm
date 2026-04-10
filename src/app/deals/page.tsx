@@ -115,28 +115,28 @@ export default function DealsPage() {
       ) : (
         <>
         {/* Mobile: Cards */}
-        <div className="md:hidden space-y-2">
+        <div className="md:hidden space-y-3">
           {deals.map((deal) => (
             <div
               key={deal.id}
-              className="p-3 rounded-lg border bg-card cursor-pointer hover:shadow-sm transition-shadow"
+              className="p-4 rounded-xl border bg-card cursor-pointer active:bg-muted/50 transition-colors"
               onClick={() => router.push(`/deals/${deal.id}`)}
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{deal.title}</p>
-                  <p className="text-xs text-muted-foreground">{deal.contactName || "Sin cliente"}</p>
+                  <p className="font-semibold text-base truncate">{deal.title}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">{deal.contactName || "Sin cliente"}</p>
                 </div>
                 <Badge
                   variant="outline"
-                  className="shrink-0 text-[10px]"
+                  className="shrink-0 text-xs"
                   style={{ borderColor: deal.stageColor || undefined, color: deal.stageColor || undefined }}
                 >
                   {deal.stageName}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-sm font-semibold text-primary">
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-base font-semibold text-primary">
                   {deal.agreedFees ? formatCurrency(deal.agreedFees) : "-"}
                 </span>
                 <PaymentBadge agreedFees={deal.agreedFees} paidAmount={deal.paidAmount ?? 0} />
