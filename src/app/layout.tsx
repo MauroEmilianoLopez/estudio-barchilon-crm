@@ -37,9 +37,9 @@ export default function RootLayout({
       <body className="min-h-full flex overflow-x-hidden" suppressHydrationWarning>
         <TooltipProvider>
           <Sidebar />
-          <div className="flex-1 flex flex-col min-h-screen">
+          <div className="flex-1 flex flex-col min-h-screen w-0">
             <Header />
-            <main className="flex-1 p-3 md:p-6 bg-background overflow-auto pb-20 md:pb-6">
+            <main className="flex-1 p-3 md:p-6 bg-background pb-24 md:pb-6">
               {children}
             </main>
           </div>

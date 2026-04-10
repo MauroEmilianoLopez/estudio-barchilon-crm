@@ -23,8 +23,11 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-card safe-area-bottom">
-      <div className="flex items-stretch justify-around">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-card"
+      style={{ zIndex: 9999 }}
+    >
+      <div className="flex items-stretch justify-around pb-[env(safe-area-inset-bottom,0px)]">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href ||

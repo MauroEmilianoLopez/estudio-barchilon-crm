@@ -116,30 +116,51 @@ export function PaymentsList({ dealId, agreedFees }: PaymentsListProps) {
             No hay pagos registrados para este caso
           </p>
         ) : (
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Monto</TableHead>
-                  <TableHead>Moneda</TableHead>
-                  <TableHead>Metodo</TableHead>
-                  <TableHead>Comprobante</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {payments.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="text-sm">{formatDate(p.date)}</TableCell>
-                    <TableCell className="font-semibold">{formatCurrency(p.amount)}</TableCell>
-                    <TableCell><Badge variant="outline">{p.currency}</Badge></TableCell>
-                    <TableCell className="text-sm">{METHOD_LABELS[p.paymentMethod] || p.paymentMethod}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{p.receipt || "-"}</TableCell>
+          <>
+            {/* Mobile: Cards */}
+            <div className="md:hidden space-y-2">
+              {payments.map((p) => (
+                <div key={p.id} className="p-3 rounded-lg border bg-card">
+                  <div className="flex items-center justify-between">
+                    <span className="text-base font-semibold">{formatCurrency(p.amount)}</span>
+                    <Badge variant="outline" className="text-xs">{p.currency}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5 text-sm text-muted-foreground">
+                    <span>{formatDate(p.date)}</span>
+                    <span>{METHOD_LABELS[p.paymentMethod] || p.paymentMethod}</span>
+                  </div>
+                  {p.receipt && (
+                    <p className="text-xs text-muted-foreground mt-1">Comp: {p.receipt}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* Desktop: Table */}
+            <div className="hidden md:block rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Monto</TableHead>
+                    <TableHead>Moneda</TableHead>
+                    <TableHead>Metodo</TableHead>
+                    <TableHead>Comprobante</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {payments.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="text-sm">{formatDate(p.date)}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(p.amount)}</TableCell>
+                      <TableCell><Badge variant="outline">{p.currency}</Badge></TableCell>
+                      <TableCell className="text-sm">{METHOD_LABELS[p.paymentMethod] || p.paymentMethod}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{p.receipt || "-"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </CardContent>
 
