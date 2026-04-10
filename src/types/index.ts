@@ -94,6 +94,7 @@ export interface DealWithContact extends Deal {
   stage?: PipelineStage;
   contactName?: string | null;
   contactTemperature?: string | null;
+  contactCaseType?: string | null;
 }
 
 export interface ContactWithDeals extends Contact {

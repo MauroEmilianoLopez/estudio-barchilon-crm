@@ -5,6 +5,24 @@ import { formatCurrency } from "@/lib/constants";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+const CASE_TYPE_COLORS: Record<string, string> = {
+  civil: "#3B82F6",
+  laboral: "#F97316",
+  penal: "#EF4444",
+  familia: "#EC4899",
+  comercial: "#10B981",
+  otro: "#6B7280",
+};
+
+const CASE_TYPE_LABELS: Record<string, string> = {
+  civil: "Civil",
+  laboral: "Laboral",
+  penal: "Penal",
+  familia: "Familia",
+  comercial: "Comercial",
+  otro: "Otro",
+};
+
 interface DealCardProps {
   id: string;
   title: string;
@@ -14,6 +32,7 @@ interface DealCardProps {
   probability: number;
   agreedFees: number | null;
   paidAmount: number;
+  contactCaseType: string | null;
 }
 
 function PaymentBadge({ agreedFees, paidAmount }: { agreedFees: number | null; paidAmount: number }) {
@@ -57,6 +76,7 @@ export function DealCard({
   contactName,
   agreedFees,
   paidAmount,
+  contactCaseType,
 }: DealCardProps) {
   const {
     attributes,
@@ -67,10 +87,15 @@ export function DealCard({
     isDragging,
   } = useSortable({ id });
 
+  const borderColor = CASE_TYPE_COLORS[contactCaseType || "otro"] || CASE_TYPE_COLORS.otro;
+  const caseLabel = CASE_TYPE_LABELS[contactCaseType || ""] || null;
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    borderLeftWidth: "4px",
+    borderLeftColor: borderColor,
   };
 
   const fees = agreedFees || 0;
@@ -84,9 +109,23 @@ export function DealCard({
       className="p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
     >
       <div className="space-y-1.5">
-        <p className="text-xs text-muted-foreground truncate">
-          {contactName || "Sin cliente"}
-        </p>
+        <div className="flex items-center justify-between gap-1">
+          <p className="text-xs text-muted-foreground truncate">
+            {contactName || "Sin cliente"}
+          </p>
+          {caseLabel && (
+            <span
+              className="inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
+              style={{
+                backgroundColor: `${borderColor}18`,
+                color: borderColor,
+              }}
+            >
+              {caseLabel}
+            </span>
+          )}
+        </div>
+
         <p className="text-sm font-medium leading-tight">{title}</p>
 
         {fees > 0 && (

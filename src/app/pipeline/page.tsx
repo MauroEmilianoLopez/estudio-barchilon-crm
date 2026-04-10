@@ -24,10 +24,13 @@ export default async function PipelinePage() {
       notes: deals.notes,
       agreedFees: deals.agreedFees,
       paidAmount: deals.paidAmount,
+      nextHearing: deals.nextHearing,
+      internalNotes: deals.internalNotes,
       createdAt: deals.createdAt,
       updatedAt: deals.updatedAt,
       contactName: contacts.name,
       contactTemperature: contacts.temperature,
+      contactCaseType: contacts.caseType,
     })
     .from(deals)
     .leftJoin(contacts, eq(deals.contactId, contacts.id));
@@ -47,10 +50,13 @@ export default async function PipelinePage() {
         notes: d.notes,
         agreedFees: d.agreedFees,
         paidAmount: d.paidAmount,
+        nextHearing: d.nextHearing,
+        internalNotes: d.internalNotes,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
         contactName: d.contactName,
         contactTemperature: d.contactTemperature,
+        contactCaseType: d.contactCaseType,
       })) as PipelineColumn["deals"],
   }));
 
@@ -61,6 +67,23 @@ export default async function PipelinePage() {
         <p className="text-muted-foreground">
           Arrastra y suelta casos entre etapas
         </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 text-xs">
+        <span className="text-muted-foreground font-medium">Tipo de causa:</span>
+        {[
+          { label: "Civil", color: "#3B82F6" },
+          { label: "Laboral", color: "#F97316" },
+          { label: "Penal", color: "#EF4444" },
+          { label: "Familia", color: "#EC4899" },
+          { label: "Comercial", color: "#10B981" },
+          { label: "Otro", color: "#6B7280" },
+        ].map((t) => (
+          <span key={t.label} className="inline-flex items-center gap-1">
+            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: t.color }} />
+            {t.label}
+          </span>
+        ))}
       </div>
 
       <KanbanBoard initialColumns={columns} />

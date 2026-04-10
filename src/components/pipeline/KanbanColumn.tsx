@@ -17,6 +17,7 @@ interface Deal {
   probability: number;
   agreedFees: number | null;
   paidAmount: number;
+  contactCaseType: string | null;
 }
 
 interface KanbanColumnProps {

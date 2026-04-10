@@ -145,6 +145,7 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
               probability: d.probability,
               agreedFees: d.agreedFees ?? null,
               paidAmount: d.paidAmount ?? 0,
+              contactCaseType: d.contactCaseType ?? null,
             }))}
           />
         ))}
@@ -167,6 +168,7 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
             probability={activeDeal.probability}
             agreedFees={activeDeal.agreedFees ?? null}
             paidAmount={activeDeal.paidAmount ?? 0}
+            contactCaseType={activeDeal.contactCaseType ?? null}
           />
         ) : null}
       </DragOverlay>
