@@ -133,19 +133,19 @@ export function ContactDetailClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => router.push("/contacts")}
-          className="cursor-pointer"
+          className="cursor-pointer shrink-0"
           aria-label="Volver a contactos"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">{contact.name}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+            <h1 className="text-lg md:text-2xl font-bold truncate">{contact.name}</h1>
             <StatusBadge temperature={contact.temperature as Temperature} />
           </div>
           <p className="text-muted-foreground flex items-center gap-2">
@@ -165,7 +165,7 @@ export function ContactDetailClient({
             &middot; {SOURCE_LABELS[contact.source as LeadSource] || contact.source}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 md:gap-2 shrink-0">
           {contact.phone && (
             <Button
               variant="outline"
@@ -173,8 +173,8 @@ export function ContactDetailClient({
               onClick={() => setShowWhatsApp(true)}
               className="cursor-pointer text-green-700 border-green-300 hover:bg-green-50"
             >
-              <MessageCircle className="h-4 w-4 mr-1" />
-              WhatsApp
+              <MessageCircle className="h-4 w-4 md:mr-1" />
+              <span className="hidden md:inline">WhatsApp</span>
             </Button>
           )}
           <Button
@@ -183,8 +183,8 @@ export function ContactDetailClient({
             onClick={() => setShowEditForm(true)}
             className="cursor-pointer"
           >
-            <Pencil className="h-4 w-4 mr-1" />
-            Editar
+            <Pencil className="h-4 w-4 md:mr-1" />
+            <span className="hidden md:inline">Editar</span>
           </Button>
           <Button
             variant="outline"
@@ -192,8 +192,8 @@ export function ContactDetailClient({
             onClick={handleDelete}
             className="cursor-pointer text-destructive hover:text-destructive"
           >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Eliminar
+            <Trash2 className="h-4 w-4 md:mr-1" />
+            <span className="hidden md:inline">Eliminar</span>
           </Button>
         </div>
       </div>

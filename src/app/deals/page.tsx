@@ -73,25 +73,27 @@ export default function DealsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Casos</h1>
-          <p className="text-muted-foreground">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Casos</h1>
+          <p className="text-muted-foreground text-sm hidden sm:block">
             Casos juridicos en gestion
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => window.open("/api/export?type=deals")}
-            className="cursor-pointer"
+            className="cursor-pointer hidden sm:inline-flex"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 mr-1" />
             Exportar
           </Button>
-          <Button onClick={() => setShowForm(true)} className="cursor-pointer">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Caso
+          <Button size="sm" onClick={() => setShowForm(true)} className="cursor-pointer">
+            <Plus className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Nuevo Caso</span>
+            <span className="sm:hidden">Nuevo</span>
           </Button>
         </div>
       </div>

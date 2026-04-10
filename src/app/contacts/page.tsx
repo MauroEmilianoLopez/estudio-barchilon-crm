@@ -32,16 +32,17 @@ export default function ContactsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Contactos</h1>
-          <p className="text-muted-foreground">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Contactos</h1>
+          <p className="text-muted-foreground text-sm hidden sm:block">
             Gestiona tus clientes y consultas
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="cursor-pointer">
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Contacto
+        <Button size="sm" onClick={() => setShowForm(true)} className="cursor-pointer shrink-0">
+          <Plus className="h-4 w-4 mr-1" />
+          <span className="hidden sm:inline">Nuevo Contacto</span>
+          <span className="sm:hidden">Nuevo</span>
         </Button>
       </div>
 

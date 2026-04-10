@@ -66,14 +66,14 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
             className="pl-9"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto shrink-0">
           {(["", "hot", "warm", "cold"] as const).map((temp) => (
             <Button
               key={temp}
               variant={filterTemp === temp ? "default" : "outline"}
               size="sm"
               onClick={() => setFilterTemp(temp)}
-              className="cursor-pointer"
+              className="cursor-pointer shrink-0"
             >
               {temp === "" ? "Todos" : temp === "hot" ? "Urgente" : temp === "warm" ? "En curso" : "Inactivo"}
             </Button>
@@ -82,7 +82,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
             variant="outline"
             size="sm"
             onClick={() => window.open("/api/export?type=contacts")}
-            className="cursor-pointer"
+            className="cursor-pointer shrink-0 hidden sm:inline-flex"
           >
             <Download className="h-4 w-4 mr-1" />
             Exportar

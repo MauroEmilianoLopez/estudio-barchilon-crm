@@ -81,15 +81,15 @@ export default async function DealDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         <Link href="/deals">
-          <Button variant="ghost" size="icon" className="cursor-pointer">
+          <Button variant="ghost" size="icon" className="cursor-pointer shrink-0">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">{deal.title}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+            <h1 className="text-lg md:text-2xl font-bold truncate">{deal.title}</h1>
             {stage && (
               <Badge
                 variant="outline"
@@ -122,7 +122,7 @@ export default async function DealDetailPage({
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">

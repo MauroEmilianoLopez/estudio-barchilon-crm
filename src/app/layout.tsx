@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex" suppressHydrationWarning>
+      <body className="min-h-full flex overflow-x-hidden" suppressHydrationWarning>
         <TooltipProvider>
           <Sidebar />
           <div className="flex-1 flex flex-col min-h-screen">
