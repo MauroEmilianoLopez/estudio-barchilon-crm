@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ContactForm } from "./ContactForm";
 import { ActivityForm } from "@/components/activities/ActivityForm";
+import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
 import {
   ArrowLeft,
   Mail,
@@ -61,6 +62,9 @@ interface ContactDetailClientProps {
     title: string;
     value: number;
     probability: number;
+    agreedFees: number | null;
+    paidAmount: number;
+    nextHearing: number | Date | null;
     stageName: string | null;
     stageColor: string | null;
     createdAt: number | Date;
@@ -83,6 +87,7 @@ export function ContactDetailClient({
   const router = useRouter();
   const [showEditForm, setShowEditForm] = useState(false);
   const [showActivityForm, setShowActivityForm] = useState(false);
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const handleCopy = async (value: string, field: string) => {
@@ -161,6 +166,17 @@ export function ContactDetailClient({
           </p>
         </div>
         <div className="flex gap-2">
+          {contact.phone && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowWhatsApp(true)}
+              className="cursor-pointer text-green-700 border-green-300 hover:bg-green-50"
+            >
+              <MessageCircle className="h-4 w-4 mr-1" />
+              WhatsApp
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -213,15 +229,13 @@ export function ContactDetailClient({
                 <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span className="flex-1">{contact.phone}</span>
                 <div className="flex items-center gap-1">
-                  <a
-                    href={`https://wa.me/${cleanPhoneForWhatsApp(contact.phone)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    onClick={() => setShowWhatsApp(true)}
                     className="p-1 rounded hover:bg-green-50 cursor-pointer"
-                    title="Abrir WhatsApp"
+                    title="Enviar WhatsApp"
                   >
                     <MessageCircle className="h-3.5 w-3.5 text-green-600" />
-                  </a>
+                  </button>
                   <a
                     href={`tel:${contact.phone}`}
                     className="p-1 rounded hover:bg-blue-50 cursor-pointer"
@@ -423,6 +437,21 @@ export function ContactDetailClient({
         }}
         preselectedContactId={contact.id}
       />
+
+      {contact.phone && (
+        <WhatsAppModal
+          open={showWhatsApp}
+          onClose={() => setShowWhatsApp(false)}
+          contactName={contact.name}
+          contactPhone={contact.phone}
+          deals={deals.map((d) => ({
+            title: d.title,
+            agreedFees: d.agreedFees,
+            paidAmount: d.paidAmount,
+            nextHearing: d.nextHearing ? String(d.nextHearing) : null,
+          }))}
+        />
+      )}
     </div>
   );
 }

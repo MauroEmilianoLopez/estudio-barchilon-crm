@@ -10,6 +10,7 @@ import { ArrowLeft, Calendar, DollarSign, FileText, Gavel, Scale, CheckCircle, A
 import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/constants";
 import { ACTIVITY_TYPE_CONFIG } from "@/lib/constants";
 import { PaymentsList } from "@/components/payments/PaymentsList";
+import { WhatsAppButton } from "@/components/whatsapp/WhatsAppButton";
 
 export const dynamic = "force-dynamic";
 
@@ -107,6 +108,18 @@ export default async function DealDetailPage({
             </Link>
           )}
         </div>
+        {contact?.phone && (
+          <WhatsAppButton
+            contactName={contact.name}
+            contactPhone={contact.phone}
+            deals={[{
+              title: deal.title,
+              agreedFees: deal.agreedFees,
+              paidAmount: deal.paidAmount,
+              nextHearing: deal.nextHearing ? String(deal.nextHearing) : null,
+            }]}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
