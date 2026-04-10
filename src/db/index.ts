@@ -2,8 +2,10 @@ import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 
+const url = process.env.TURSO_DATABASE_URL || "file:data/crm.db";
+
 const client = createClient({
-  url: process.env.TURSO_DATABASE_URL || "file:data/crm.db",
+  url,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
