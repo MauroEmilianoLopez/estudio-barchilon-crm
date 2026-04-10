@@ -34,14 +34,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex overflow-x-hidden" suppressHydrationWarning>
+      <body className="min-h-full" suppressHydrationWarning>
         <TooltipProvider>
-          <Sidebar />
-          <div className="flex-1 flex flex-col min-h-screen w-0">
-            <Header />
-            <main className="flex-1 p-3 md:p-6 bg-background pb-24 md:pb-6">
-              {children}
-            </main>
+          <div className="flex min-h-full">
+            <Sidebar />
+            <div className="flex-1 flex flex-col min-h-screen min-w-0">
+              <Header />
+              <main className="flex-1 p-3 md:p-6 bg-background overflow-x-hidden pb-24 md:pb-6">
+                {children}
+              </main>
+            </div>
           </div>
           <BottomNav />
           <Toaster />

@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -21,8 +23,13 @@ const navItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const nav = (
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-card"
       style={{ zIndex: 9999 }}
@@ -51,4 +58,8 @@ export function BottomNav() {
       </div>
     </nav>
   );
+
+  if (!mounted) return nav;
+
+  return createPortal(nav, document.body);
 }
