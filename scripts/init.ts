@@ -74,6 +74,7 @@ async function init() {
       agreed_fees INTEGER,
       paid_amount INTEGER NOT NULL DEFAULT 0,
       next_hearing INTEGER,
+      hearing_status TEXT NOT NULL DEFAULT 'pendiente',
       internal_notes TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL

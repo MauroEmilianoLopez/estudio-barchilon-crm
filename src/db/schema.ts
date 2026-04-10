@@ -53,6 +53,7 @@ export const deals = sqliteTable("deals", {
   agreedFees: integer("agreed_fees"),
   paidAmount: integer("paid_amount").notNull().default(0),
   nextHearing: integer("next_hearing", { mode: "timestamp" }),
+  hearingStatus: text("hearing_status").notNull().default("pendiente"),
   internalNotes: text("internal_notes"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
