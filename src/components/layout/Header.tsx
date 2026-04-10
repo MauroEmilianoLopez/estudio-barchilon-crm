@@ -99,28 +99,17 @@ export function Header() {
   const hasResults = hasContacts || hasDeals;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
-      <Sheet>
-        <SheetTrigger
-          render={<Button variant="ghost" size="icon" className="md:hidden cursor-pointer" />}
-        >
-          <Menu className="h-5 w-5" />
-        </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
-          <MobileNav />
-        </SheetContent>
-      </Sheet>
-
-      <div className="flex-1 flex items-center gap-4">
-        <div ref={containerRef} className="relative w-full max-w-md">
+    <header className="sticky top-0 z-30 flex h-14 md:h-16 items-center gap-2 md:gap-4 border-b bg-card px-3 md:px-6">
+      <div className="flex-1 flex items-center gap-2 md:gap-4">
+        <div ref={containerRef} className="relative w-full md:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar cliente, caso o expediente..."
+            placeholder="Buscar..."
             value={query}
             onChange={(e) => handleChange(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => results && query.length >= 2 && setOpen(true)}
-            className="pl-9 bg-muted/50"
+            className="pl-9 bg-muted/50 h-9 md:h-10 text-sm"
           />
 
           {open && results && (
@@ -190,7 +179,7 @@ export function Header() {
         </div>
       </div>
 
-      <Button variant="ghost" size="icon" className="relative cursor-pointer">
+      <Button variant="ghost" size="icon" className="relative cursor-pointer hidden md:inline-flex">
         <Bell className="h-5 w-5" />
       </Button>
     </header>

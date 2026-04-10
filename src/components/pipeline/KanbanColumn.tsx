@@ -35,7 +35,7 @@ export function KanbanColumn({ id, name, color, deals }: KanbanColumnProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col min-w-[280px] w-[280px] rounded-lg bg-muted/50 transition-colors ${
+      className={`flex flex-col min-w-[85vw] w-[85vw] md:min-w-[280px] md:w-[280px] rounded-lg bg-muted/50 transition-colors snap-center ${
         isOver ? "bg-muted" : ""
       }`}
     >

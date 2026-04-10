@@ -90,15 +90,52 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
         </div>
       </div>
 
-      <div className="rounded-lg border">
+      {/* Mobile: Cards */}
+      <div className="md:hidden space-y-2">
+        {filtered.map((contact) => (
+          <div
+            key={contact.id}
+            className="p-3 rounded-lg border bg-card cursor-pointer hover:shadow-sm transition-shadow"
+            onClick={() => router.push(`/contacts/${contact.id}`)}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm truncate">{contact.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{contact.email || contact.phone || "Sin datos"}</p>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <StatusBadge temperature={contact.temperature as Temperature} size="sm" />
+                <WhatsAppCell contact={contact} />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              {contact.caseType && (
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted">
+                  {({ civil: "Civil", laboral: "Laboral", penal: "Penal", familia: "Familia", comercial: "Comercial", otro: "Otro" }[contact.caseType] || contact.caseType)}
+                </span>
+              )}
+              {contact.score >= 70 ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">Urgente</span>
+              ) : contact.score >= 40 ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700">Normal</span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">Sin prisa</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table */}
+      <div className="hidden md:block rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
-              <TableHead className="hidden sm:table-cell">Tipo de causa</TableHead>
-              <TableHead className="hidden md:table-cell">Fuente</TableHead>
+              <TableHead>Tipo de causa</TableHead>
+              <TableHead className="hidden lg:table-cell">Fuente</TableHead>
               <TableHead>Estado</TableHead>
-              <TableHead className="hidden md:table-cell">Prioridad</TableHead>
+              <TableHead>Prioridad</TableHead>
               <TableHead className="hidden lg:table-cell">Fecha</TableHead>
               <TableHead className="w-10">Acciones</TableHead>
             </TableRow>
@@ -113,37 +150,32 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
                 <TableCell>
                   <div>
                     <p className="font-medium">{contact.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {contact.email || "Sin email"}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{contact.email || "Sin email"}</p>
                   </div>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">
+                <TableCell>
                   {contact.caseType
                     ? ({ civil: "Civil", laboral: "Laboral", penal: "Penal", familia: "Familia", comercial: "Comercial", otro: "Otro" }[contact.caseType] || contact.caseType)
                     : "-"}
                 </TableCell>
-                <TableCell className="hidden md:table-cell text-sm">
+                <TableCell className="hidden lg:table-cell text-sm">
                   {SOURCE_LABELS[contact.source as LeadSource] || contact.source}
                 </TableCell>
                 <TableCell>
                   <StatusBadge temperature={contact.temperature as Temperature} size="sm" />
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
+                <TableCell>
                   {contact.score >= 70 ? (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                      Urgente
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />Urgente
                     </span>
                   ) : contact.score >= 40 ? (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />
-                      Normal
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-500" />Normal
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      Sin prisa
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />Sin prisa
                     </span>
                   )}
                 </TableCell>

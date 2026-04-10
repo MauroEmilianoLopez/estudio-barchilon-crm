@@ -1,0 +1,51 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  Kanban,
+  Briefcase,
+  CalendarClock,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const navItems = [
+  { href: "/", label: "Inicio", icon: LayoutDashboard },
+  { href: "/pipeline", label: "Pipeline", icon: Kanban },
+  { href: "/contacts", label: "Clientes", icon: Users },
+  { href: "/deals", label: "Casos", icon: Briefcase },
+  { href: "/agenda", label: "Agenda", icon: CalendarClock },
+];
+
+export function BottomNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-card">
+      <div className="flex items-center justify-around h-14">
+        {navItems.map((item) => {
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/" && pathname.startsWith(item.href));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors",
+                isActive
+                  ? "text-primary"
+                  : "text-muted-foreground"
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}

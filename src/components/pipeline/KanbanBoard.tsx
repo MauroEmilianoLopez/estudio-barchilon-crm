@@ -127,7 +127,7 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory md:snap-none -mx-3 px-3 md:mx-0 md:px-0">
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}
