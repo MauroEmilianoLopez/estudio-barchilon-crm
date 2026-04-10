@@ -14,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Search, Users, Download } from "lucide-react";
+import { Search, Users, Download, MessageCircle } from "lucide-react";
+import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
 import { formatDate } from "@/lib/constants";
 import { SOURCE_LABELS } from "@/lib/constants";
 import type { Contact, Temperature, LeadSource } from "@/types";
@@ -98,6 +99,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
               <TableHead>Estado</TableHead>
               <TableHead className="hidden md:table-cell">Prioridad</TableHead>
               <TableHead className="hidden lg:table-cell">Fecha</TableHead>
+              <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -147,6 +149,11 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
                 <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                   {formatDate(contact.createdAt)}
                 </TableCell>
+                <TableCell>
+                  {contact.phone && (
+                    <WhatsAppCell contact={contact} />
+                  )}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -157,5 +164,30 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
         {filtered.length} de {contacts.length} contactos
       </p>
     </div>
+  );
+}
+
+function WhatsAppCell({ contact }: { contact: Contact }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        className="p-1.5 rounded-full hover:bg-green-50 cursor-pointer transition-colors"
+        title="Enviar WhatsApp"
+      >
+        <MessageCircle className="h-4 w-4 text-green-600" />
+      </button>
+      <WhatsAppModal
+        open={open}
+        onClose={() => setOpen(false)}
+        contactName={contact.name}
+        contactPhone={contact.phone!}
+      />
+    </>
   );
 }
