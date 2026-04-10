@@ -16,6 +16,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Search, Users, Download, MessageCircle } from "lucide-react";
 import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/constants";
 import { SOURCE_LABELS } from "@/lib/constants";
 import type { Contact, Temperature, LeadSource } from "@/types";
@@ -99,7 +100,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
               <TableHead>Estado</TableHead>
               <TableHead className="hidden md:table-cell">Prioridad</TableHead>
               <TableHead className="hidden lg:table-cell">Fecha</TableHead>
-              <TableHead className="w-10"></TableHead>
+              <TableHead className="w-10">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -150,9 +151,7 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
                   {formatDate(contact.createdAt)}
                 </TableCell>
                 <TableCell>
-                  {contact.phone && (
-                    <WhatsAppCell contact={contact} />
-                  )}
+                  <WhatsAppCell contact={contact} />
                 </TableCell>
               </TableRow>
             ))}
@@ -169,25 +168,41 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
 
 function WhatsAppCell({ contact }: { contact: Contact }) {
   const [open, setOpen] = useState(false);
+  const hasPhone = !!contact.phone;
 
   return (
     <>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen(true);
-        }}
-        className="p-1.5 rounded-full hover:bg-green-50 cursor-pointer transition-colors"
-        title="Enviar WhatsApp"
-      >
-        <MessageCircle className="h-4 w-4 text-green-600" />
-      </button>
-      <WhatsAppModal
-        open={open}
-        onClose={() => setOpen(false)}
-        contactName={contact.name}
-        contactPhone={contact.phone!}
-      />
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (hasPhone) setOpen(true);
+              }}
+              disabled={!hasPhone}
+              className={`p-1.5 rounded-full transition-colors ${
+                hasPhone
+                  ? "hover:bg-green-50 cursor-pointer"
+                  : "opacity-40 cursor-not-allowed"
+              }`}
+            />
+          }
+        >
+          <MessageCircle className={`h-4 w-4 ${hasPhone ? "text-green-600" : "text-muted-foreground"}`} />
+        </TooltipTrigger>
+        <TooltipContent>
+          {hasPhone ? "Enviar WhatsApp" : "Sin telefono cargado"}
+        </TooltipContent>
+      </Tooltip>
+      {hasPhone && (
+        <WhatsAppModal
+          open={open}
+          onClose={() => setOpen(false)}
+          contactName={contact.name}
+          contactPhone={contact.phone!}
+        />
+      )}
     </>
   );
 }
