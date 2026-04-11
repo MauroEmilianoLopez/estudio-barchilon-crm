@@ -147,3 +147,10 @@
     }
   }
 }
+
+/* Bottom nav padding - mobile only */
+@media (max-width: 768px) {
+  main {
+    padding-bottom: 80px !important;
+  }
+}

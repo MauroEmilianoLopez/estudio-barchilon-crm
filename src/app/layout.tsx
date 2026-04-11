@@ -40,7 +40,10 @@ export default function RootLayout({
             <Sidebar />
             <div className="flex-1 flex flex-col min-h-screen min-w-0">
               <Header />
-              <main className="flex-1 p-3 md:p-6 bg-background overflow-x-hidden pb-20 md:pb-0">
+              <main
+                className="flex-1 p-3 md:p-6 bg-background overflow-x-hidden"
+                style={{ paddingBottom: "env(safe-area-inset-bottom, 80px)" }}
+              >
                 {children}
               </main>
             </div>
