@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 
 interface BottomSheetProps {
@@ -11,52 +11,78 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ open, onClose, children, title }: BottomSheetProps) {
-  const sheetRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  const [animating, setAnimating] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
+    if (open) {
+      setVisible(true);
+      requestAnimationFrame(() => requestAnimationFrame(() => setAnimating(true)));
+      document.body.style.overflow = "hidden";
+    } else {
+      setAnimating(false);
+      const timer = setTimeout(() => { setVisible(false); }, 300);
+      document.body.style.overflow = "";
+      return () => clearTimeout(timer);
+    }
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
-    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", handler);
       document.body.style.overflow = "";
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!visible || !mounted) return null;
 
   const content = (
-    <div
-      className="fixed inset-0"
-      style={{ zIndex: 9998 }}
-    >
+    <div className="fixed inset-0" style={{ zIndex: 9998 }}>
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 animate-in fade-in-0 duration-200"
+        className="absolute inset-0 bg-black/50 transition-opacity duration-300"
+        style={{ opacity: animating ? 1 : 0 }}
         onClick={onClose}
       />
 
-      {/* Sheet - bottom sheet on mobile, centered modal on desktop */}
-      <div className="absolute inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md md:w-full">
-        <div
-          ref={sheetRef}
-          className="bg-card rounded-t-2xl md:rounded-2xl max-h-[85vh] md:max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:fade-in-0 md:zoom-in-95 duration-200"
-        >
-          {/* Drag handle - mobile only */}
-          <div className="flex justify-center pt-3 pb-1 md:hidden">
+      {/* Mobile: bottom sheet / Desktop: centered modal */}
+      {/* Mobile */}
+      <div
+        className="md:hidden absolute inset-x-0 bottom-0 transition-transform duration-300 ease-out"
+        style={{ transform: animating ? "translateY(0)" : "translateY(100%)" }}
+      >
+        <div className="bg-card rounded-t-2xl flex flex-col" style={{ height: "85vh" }}>
+          <div className="flex justify-center pt-3 pb-1 shrink-0">
             <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
           </div>
-
           {title && (
-            <div className="px-5 pt-2 pb-3 md:pt-5">
-              <h3 className="text-xl md:text-lg font-bold">{title}</h3>
+            <div className="px-5 pt-1 pb-3 shrink-0">
+              <h3 className="text-xl font-bold">{title}</h3>
             </div>
           )}
+          <div className="flex-1 overflow-y-auto px-5 pb-8">
+            {children}
+          </div>
+        </div>
+      </div>
 
-          <div className="flex-1 overflow-y-auto px-5 pb-6 md:pb-5">
+      {/* Desktop */}
+      <div
+        className="hidden md:flex absolute inset-0 items-center justify-center transition-opacity duration-200"
+        style={{ opacity: animating ? 1 : 0 }}
+      >
+        <div
+          className="bg-card rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-xl transition-transform duration-200"
+          style={{ transform: animating ? "scale(1)" : "scale(0.95)" }}
+        >
+          {title && (
+            <div className="px-6 pt-6 pb-3 shrink-0">
+              <h3 className="text-lg font-bold">{title}</h3>
+            </div>
+          )}
+          <div className="flex-1 overflow-y-auto px-6 pb-6">
             {children}
           </div>
         </div>
@@ -64,6 +90,5 @@ export function BottomSheet({ open, onClose, children, title }: BottomSheetProps
     </div>
   );
 
-  if (typeof window === "undefined") return null;
   return createPortal(content, document.body);
 }
