@@ -29,6 +29,15 @@ const CASE_TYPE_LABELS: Record<string, string> = {
   otro: "Otro",
 };
 
+const CASE_TYPE_COLORS: Record<string, string> = {
+  civil: "bg-blue-100 text-blue-700",
+  laboral: "bg-orange-100 text-orange-700",
+  penal: "bg-red-100 text-red-700",
+  familia: "bg-pink-100 text-pink-700",
+  comercial: "bg-emerald-100 text-emerald-700",
+  otro: "bg-gray-100 text-gray-700",
+};
+
 const CASE_TYPE_FILTERS = ["civil", "laboral", "penal", "familia", "comercial"];
 
 interface AgendaItem {
@@ -92,7 +101,6 @@ export default function AgendaPage() {
   const endOfDay = new Date(startOfDay.getTime() + 86400000);
 
   const filtered = items.filter((i) => !filter || i.caseType === filter);
-
   const pending = filtered.filter((i) => i.hearingStatus === "pendiente");
   const history = filtered.filter((i) => i.hearingStatus !== "pendiente");
 
@@ -104,21 +112,19 @@ export default function AgendaPage() {
   const overdueItems = pending.filter((i) => toDate(i.nextHearing) < startOfDay);
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Agenda</h1>
-          <p className="text-sm text-muted-foreground hidden sm:block">Fechas de actuacion de todos los casos</p>
-        </div>
+    <div className="space-y-5 pb-4">
+      <div className="min-w-0">
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight">Agenda</h1>
+        <p className="text-sm text-muted-foreground hidden sm:block">Fechas de actuacion de todos los casos</p>
       </div>
 
-      {/* Filtros */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      {/* Filtros - scroll horizontal, no wrap */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-3 px-3 md:mx-0 md:px-0 scrollbar-none">
         <Button
           variant={filter === "" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("")}
-          className="cursor-pointer shrink-0"
+          className="cursor-pointer shrink-0 min-h-[40px] px-4"
         >
           Todas
         </Button>
@@ -128,7 +134,7 @@ export default function AgendaPage() {
             variant={filter === ct ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter(ct)}
-            className="cursor-pointer shrink-0"
+            className="cursor-pointer shrink-0 min-h-[40px] px-4"
           >
             {CASE_TYPE_LABELS[ct]}
           </Button>
@@ -138,96 +144,86 @@ export default function AgendaPage() {
       {loading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />
+            <div key={i} className="h-28 bg-muted rounded-xl animate-pulse" />
           ))}
         </div>
       ) : pending.length === 0 && history.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
-            <CalendarClock className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <CardContent className="py-16 text-center">
+            <CalendarClock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-base text-muted-foreground">
               No hay fechas de actuacion cargadas
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {/* HOY */}
+        <div className="space-y-8">
           {todayItems.length > 0 && (
-            <Section title="Hoy" count={todayItems.length} color="text-blue-700">
-              <div className="space-y-3">
-                {todayItems.map((item) => (
-                  <AgendaCard
-                    key={item.dealId}
-                    item={item}
-                    variant="today"
-                    onAction={handleAction}
-                    onActivity={() => setActivityDeal({ dealId: item.dealId, contactId: item.contactId })}
-                    onReschedule={(id) => setReschedule({ dealId: id, currentDate: toDate(item.nextHearing).toISOString().split("T")[0] })}
-                  />
-                ))}
-              </div>
-            </Section>
+            <SectionHeader title="Hoy" count={todayItems.length} color="text-blue-700" bg="bg-blue-600">
+              {todayItems.map((item) => (
+                <AgendaCard
+                  key={item.dealId}
+                  item={item}
+                  variant="today"
+                  onAction={handleAction}
+                  onActivity={() => setActivityDeal({ dealId: item.dealId, contactId: item.contactId })}
+                  onReschedule={(id) => setReschedule({ dealId: id, currentDate: toDate(item.nextHearing).toISOString().split("T")[0] })}
+                />
+              ))}
+            </SectionHeader>
           )}
 
-          {/* VENCIDAS */}
           {overdueItems.length > 0 && (
-            <Section title="Vencidas" count={overdueItems.length} color="text-red-700">
-              <div className="space-y-3">
-                {overdueItems.map((item) => (
+            <SectionHeader title="Vencidas" count={overdueItems.length} color="text-red-700" bg="bg-red-600">
+              {overdueItems.map((item) => (
+                <AgendaCard
+                  key={item.dealId}
+                  item={item}
+                  variant="overdue"
+                  onAction={handleAction}
+                  onActivity={() => setActivityDeal({ dealId: item.dealId, contactId: item.contactId })}
+                  onReschedule={(id) => setReschedule({ dealId: id, currentDate: toDate(item.nextHearing).toISOString().split("T")[0] })}
+                />
+              ))}
+            </SectionHeader>
+          )}
+
+          {futureItems.length > 0 && (
+            <SectionHeader title="Proximas" count={futureItems.length} color="text-foreground" bg="bg-muted-foreground">
+              {futureItems.map((item) => {
+                const days = Math.ceil((toDate(item.nextHearing).getTime() - now.getTime()) / 86400000);
+                return (
                   <AgendaCard
                     key={item.dealId}
                     item={item}
-                    variant="overdue"
+                    variant={days <= 3 ? "urgent" : "normal"}
                     onAction={handleAction}
                     onActivity={() => setActivityDeal({ dealId: item.dealId, contactId: item.contactId })}
                     onReschedule={(id) => setReschedule({ dealId: id, currentDate: toDate(item.nextHearing).toISOString().split("T")[0] })}
                   />
-                ))}
-              </div>
-            </Section>
+                );
+              })}
+            </SectionHeader>
           )}
 
-          {/* PROXIMAS */}
-          {futureItems.length > 0 && (
-            <Section title="Proximas" count={futureItems.length} color="text-muted-foreground">
-              <div className="space-y-3">
-                {futureItems.map((item) => {
-                  const days = Math.ceil((toDate(item.nextHearing).getTime() - now.getTime()) / 86400000);
-                  return (
-                    <AgendaCard
-                      key={item.dealId}
-                      item={item}
-                      variant={days <= 3 ? "urgent" : "normal"}
-                      onAction={handleAction}
-                      onActivity={() => setActivityDeal({ dealId: item.dealId, contactId: item.contactId })}
-                      onReschedule={(id) => setReschedule({ dealId: id, currentDate: toDate(item.nextHearing).toISOString().split("T")[0] })}
-                    />
-                  );
-                })}
-              </div>
-            </Section>
-          )}
-
-          {/* HISTORIAL */}
           {history.length > 0 && (
             <div>
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-2 text-sm font-semibold text-muted-foreground mb-2 cursor-pointer"
+                className="flex items-center gap-2 text-base font-semibold text-muted-foreground mb-3 cursor-pointer min-h-[44px]"
               >
-                {showHistory ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                {showHistory ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 Historial ({history.length})
               </button>
               {showHistory && (
                 <div className="space-y-2">
                   {history.map((item) => (
                     <Link key={item.dealId} href={`/deals/${item.dealId}`}>
-                      <Card className="opacity-60 hover:opacity-80 transition-opacity cursor-pointer">
-                        <CardContent className="py-3 px-4 flex items-center justify-between gap-3">
+                      <Card className="opacity-60 hover:opacity-80 active:opacity-90 transition-opacity cursor-pointer">
+                        <CardContent className="py-4 px-4 flex items-center justify-between gap-3">
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{item.dealTitle}</p>
-                            <p className="text-xs text-muted-foreground">{item.contactName}</p>
+                            <p className="text-base font-medium truncate">{item.dealTitle}</p>
+                            <p className="text-sm text-muted-foreground">{item.contactName}</p>
                           </div>
                           <Badge variant="secondary" className="text-xs shrink-0">
                             {item.hearingStatus === "realizada" ? "Realizada" : "Cancelada"}
@@ -243,7 +239,6 @@ export default function AgendaPage() {
         </div>
       )}
 
-      {/* Modal registrar actividad */}
       {activityDeal && (
         <ActivityForm
           open={true}
@@ -253,9 +248,8 @@ export default function AgendaPage() {
         />
       )}
 
-      {/* Modal reprogramar */}
       {reschedule && (
-        <RescheduleModal
+        <RescheduleSheet
           currentDate={reschedule.currentDate}
           onConfirm={(newDate) => {
             handleAction(reschedule.dealId, "reprogramar", newDate);
@@ -268,11 +262,17 @@ export default function AgendaPage() {
   );
 }
 
-function Section({ title, count, color, children }: { title: string; count: number; color: string; children: React.ReactNode }) {
+function SectionHeader({ title, count, color, bg, children }: {
+  title: string; count: number; color: string; bg: string; children: React.ReactNode;
+}) {
   return (
     <div>
-      <h2 className={`text-sm font-semibold ${color} mb-2`}>{title} ({count})</h2>
-      {children}
+      <div className="flex items-center gap-2 mb-3">
+        <span className={`w-2 h-6 rounded-full ${bg}`} />
+        <h2 className={`text-base md:text-lg font-bold ${color}`}>{title}</h2>
+        <Badge variant="secondary" className="text-xs">{count}</Badge>
+      </div>
+      <div className="space-y-3">{children}</div>
     </div>
   );
 }
@@ -293,79 +293,87 @@ function AgendaCard({ item, variant, onAction, onActivity, onReschedule }: Agend
   const borderColor =
     variant === "today" ? "border-l-blue-500" :
     variant === "overdue" || variant === "urgent" ? "border-l-red-500" :
-    "border-l-muted-foreground";
+    "border-l-gray-300";
 
-  const bgColor = variant === "today" ? "bg-blue-50/50" : "";
+  const bgColor = variant === "today" ? "bg-blue-50/60" : "";
+  const caseColor = CASE_TYPE_COLORS[item.caseType || "otro"] || CASE_TYPE_COLORS.otro;
+
+  const daysLabel =
+    variant === "overdue"
+      ? `Hace ${Math.abs(days)} dia${Math.abs(days) !== 1 ? "s" : ""}`
+      : variant === "today"
+        ? "Hoy"
+        : days === 1
+          ? "Manana"
+          : `En ${days} dias`;
+
+  const daysColor =
+    variant === "overdue" || variant === "urgent"
+      ? "bg-red-600 text-white"
+      : variant === "today"
+        ? "bg-blue-600 text-white"
+        : "bg-muted text-muted-foreground";
 
   return (
-    <Card className={`border-l-4 ${borderColor} ${bgColor}`}>
-      <CardContent className="py-4 px-4">
+    <Card className={`border-l-4 ${borderColor} ${bgColor} active:shadow-md transition-shadow`}>
+      <CardContent className="p-4 md:p-5">
+        {/* Header: cliente + badge dias */}
         <div className="flex items-start justify-between gap-3">
           <Link href={`/deals/${item.dealId}`} className="flex-1 min-w-0">
-            <p className="text-base font-semibold truncate">{item.dealTitle}</p>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-lg md:text-base font-bold leading-snug truncate">
               {item.contactName || "Sin cliente"}
-              {item.caseType && (
-                <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded bg-muted">
-                  {CASE_TYPE_LABELS[item.caseType] || item.caseType}
-                </span>
-              )}
             </p>
+            <p className="text-sm text-muted-foreground mt-0.5 truncate">{item.dealTitle}</p>
           </Link>
-          <div className="text-right shrink-0">
-            <p className="text-sm font-medium">{formatDate(d)}</p>
-            {variant === "overdue" ? (
-              <Badge variant="destructive" className="text-xs mt-1">
-                Hace {Math.abs(days)} dia{Math.abs(days) !== 1 ? "s" : ""}
-              </Badge>
-            ) : variant === "today" ? (
-              <Badge className="text-xs mt-1 bg-blue-600">Hoy</Badge>
-            ) : days <= 3 ? (
-              <Badge variant="destructive" className="text-xs mt-1">
-                {days === 1 ? "Manana" : `En ${days} dias`}
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="text-xs mt-1">En {days} dias</Badge>
-            )}
-          </div>
+          <span className={`text-xs font-bold px-2.5 py-1.5 rounded-lg shrink-0 ${daysColor}`}>
+            {daysLabel}
+          </span>
         </div>
 
-        {/* Acciones */}
-        <div className="flex gap-2 mt-3 flex-wrap">
+        {/* Fecha + tipo de causa */}
+        <div className="flex items-center gap-2 mt-3">
+          <CalendarClock className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="text-sm font-medium">{formatDate(d)}</span>
+          {item.caseType && (
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${caseColor}`}>
+              {CASE_TYPE_LABELS[item.caseType] || item.caseType}
+            </span>
+          )}
+        </div>
+
+        {/* Acciones: grid 2x2 en mobile, flex en desktop */}
+        <div className="grid grid-cols-2 md:flex gap-2 mt-4">
           <Button
-            size="sm"
             variant="outline"
-            className="cursor-pointer text-green-700 border-green-200 hover:bg-green-50 flex-1 min-w-0"
+            className="cursor-pointer text-green-700 border-green-200 hover:bg-green-50 active:bg-green-100 min-h-[44px] text-sm font-medium"
             onClick={() => onAction(item.dealId, "realizada")}
           >
-            <Check className="h-4 w-4 mr-1 shrink-0" />
-            <span className="truncate">Realizada</span>
+            <Check className="h-4 w-4 mr-1.5 shrink-0" />
+            Realizada
           </Button>
           <Button
-            size="sm"
             variant="outline"
-            className="cursor-pointer flex-1 min-w-0"
+            className="cursor-pointer active:bg-muted min-h-[44px] text-sm font-medium"
             onClick={() => onReschedule(item.dealId)}
           >
-            <CalendarDays className="h-4 w-4 mr-1 shrink-0" />
-            <span className="truncate">Reprogramar</span>
+            <CalendarDays className="h-4 w-4 mr-1.5 shrink-0" />
+            Reprogramar
           </Button>
           <Button
-            size="sm"
             variant="outline"
-            className="cursor-pointer flex-1 min-w-0"
+            className="cursor-pointer active:bg-muted min-h-[44px] text-sm font-medium"
             onClick={onActivity}
           >
-            <FileText className="h-4 w-4 mr-1 shrink-0" />
-            <span className="truncate">Actividad</span>
+            <FileText className="h-4 w-4 mr-1.5 shrink-0" />
+            Actividad
           </Button>
           <Button
-            size="sm"
             variant="outline"
-            className="cursor-pointer text-destructive border-destructive/30 hover:bg-destructive/5"
+            className="cursor-pointer text-destructive border-destructive/30 hover:bg-destructive/5 active:bg-destructive/10 min-h-[44px] text-sm font-medium"
             onClick={() => onAction(item.dealId, "cancelada")}
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 mr-1.5 shrink-0" />
+            Cancelar
           </Button>
         </div>
       </CardContent>
@@ -373,24 +381,35 @@ function AgendaCard({ item, variant, onAction, onActivity, onReschedule }: Agend
   );
 }
 
-function RescheduleModal({ currentDate, onConfirm, onClose }: { currentDate: string; onConfirm: (d: string) => void; onClose: () => void }) {
+function RescheduleSheet({ currentDate, onConfirm, onClose }: {
+  currentDate: string;
+  onConfirm: (d: string) => void;
+  onClose: () => void;
+}) {
   const [date, setDate] = useState(currentDate);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center" style={{ zIndex: 9998 }}>
-      <div className="bg-card w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl p-6 space-y-4">
-        <h3 className="text-lg font-semibold">Reprogramar actuacion</h3>
-        <Input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="text-base"
-        />
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onClose} className="flex-1 cursor-pointer">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center"
+      style={{ zIndex: 9998 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-card w-full md:max-w-sm rounded-t-2xl md:rounded-2xl p-6 space-y-5 max-h-[90vh]">
+        <div className="w-10 h-1 bg-muted rounded-full mx-auto md:hidden" />
+        <h3 className="text-xl font-bold">Reprogramar actuacion</h3>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">Nueva fecha</label>
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={onClose} className="flex-1 cursor-pointer min-h-[48px] text-base">
             Cancelar
           </Button>
-          <Button onClick={() => onConfirm(date)} className="flex-1 cursor-pointer" disabled={!date}>
+          <Button onClick={() => onConfirm(date)} className="flex-1 cursor-pointer min-h-[48px] text-base" disabled={!date}>
             Confirmar
           </Button>
         </div>
