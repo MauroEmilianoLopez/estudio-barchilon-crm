@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { formatDate } from "@/lib/constants";
 import { ActivityForm } from "@/components/activities/ActivityForm";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -248,16 +249,22 @@ export default function AgendaPage() {
         />
       )}
 
-      {reschedule && (
-        <RescheduleSheet
-          currentDate={reschedule.currentDate}
-          onConfirm={(newDate) => {
-            handleAction(reschedule.dealId, "reprogramar", newDate);
-            setReschedule(null);
-          }}
-          onClose={() => setReschedule(null)}
-        />
-      )}
+      <BottomSheet
+        open={!!reschedule}
+        onClose={() => setReschedule(null)}
+        title="Reprogramar actuacion"
+      >
+        {reschedule && (
+          <RescheduleForm
+            currentDate={reschedule.currentDate}
+            onConfirm={(newDate) => {
+              handleAction(reschedule.dealId, "reprogramar", newDate);
+              setReschedule(null);
+            }}
+            onClose={() => setReschedule(null)}
+          />
+        )}
+      </BottomSheet>
     </div>
   );
 }
@@ -381,7 +388,7 @@ function AgendaCard({ item, variant, onAction, onActivity, onReschedule }: Agend
   );
 }
 
-function RescheduleSheet({ currentDate, onConfirm, onClose }: {
+function RescheduleForm({ currentDate, onConfirm, onClose }: {
   currentDate: string;
   onConfirm: (d: string) => void;
   onClose: () => void;
@@ -389,30 +396,22 @@ function RescheduleSheet({ currentDate, onConfirm, onClose }: {
   const [date, setDate] = useState(currentDate);
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center"
-      style={{ zIndex: 9998 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-card w-full md:max-w-sm rounded-t-2xl md:rounded-2xl p-6 space-y-5 max-h-[90vh]">
-        <div className="w-10 h-1 bg-muted rounded-full mx-auto md:hidden" />
-        <h3 className="text-xl font-bold">Reprogramar actuacion</h3>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Nueva fecha</label>
-          <Input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1 cursor-pointer min-h-[48px] text-base">
-            Cancelar
-          </Button>
-          <Button onClick={() => onConfirm(date)} className="flex-1 cursor-pointer min-h-[48px] text-base" disabled={!date}>
-            Confirmar
-          </Button>
-        </div>
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-muted-foreground">Nueva fecha</label>
+        <Input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </div>
+      <div className="flex gap-3">
+        <Button variant="outline" onClick={onClose} className="flex-1 cursor-pointer min-h-[48px] text-base">
+          Cancelar
+        </Button>
+        <Button onClick={() => onConfirm(date)} className="flex-1 cursor-pointer min-h-[48px] text-base" disabled={!date}>
+          Confirmar
+        </Button>
       </div>
     </div>
   );

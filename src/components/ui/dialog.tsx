@@ -53,11 +53,22 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed z-50 grid w-full bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 inset-0 rounded-none p-4 overflow-y-auto sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:max-w-sm sm:max-h-[90vh] sm:rounded-xl sm:gap-4 sm:data-open:zoom-in-95 sm:data-closed:zoom-out-95",
+          "fixed z-50 w-full bg-popover text-sm text-popover-foreground ring-1 ring-foreground/10 duration-200 outline-none",
+          "bottom-0 left-0 right-0 max-h-[85vh] rounded-t-2xl p-5 pt-3 overflow-y-auto flex flex-col",
+          "data-open:animate-in data-open:slide-in-from-bottom-4 data-open:fade-in-0",
+          "data-closed:animate-out data-closed:slide-out-to-bottom-4 data-closed:fade-out-0",
+          "sm:bottom-auto sm:left-1/2 sm:right-auto sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2",
+          "sm:max-w-sm sm:max-h-[90vh] sm:rounded-2xl sm:p-6",
+          "sm:data-open:slide-in-from-bottom-0 sm:data-open:zoom-in-95",
+          "sm:data-closed:slide-out-to-bottom-0 sm:data-closed:zoom-out-95",
           className
         )}
         {...props}
       >
+        {/* Drag handle - mobile only */}
+        <div className="flex justify-center pb-2 sm:hidden">
+          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+        </div>
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
@@ -65,13 +76,12 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-2 right-2"
+                className="absolute top-3 right-3 sm:top-2 sm:right-2"
                 size="icon-sm"
               />
             }
           >
-            <XIcon
-            />
+            <XIcon />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}
