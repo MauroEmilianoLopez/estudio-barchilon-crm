@@ -31,7 +31,7 @@ export function BottomNav() {
 
   const nav = (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-card"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t bg-card"
       style={{ zIndex: 9999 }}
     >
       <div className="flex items-stretch justify-around pb-[env(safe-area-inset-bottom,0px)]">
