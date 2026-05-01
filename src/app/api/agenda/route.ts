@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { deals, contacts } from "@/db/schema";
-import { eq, isNotNull, asc, or } from "drizzle-orm";
+import { deals, contacts, tareas } from "@/db/schema";
+import { eq, isNotNull, asc } from "drizzle-orm";
 
 export async function GET() {
-  const items = await db
+  const vencimientos = await db
     .select({
       dealId: deals.id,
       dealTitle: deals.title,
@@ -21,7 +21,26 @@ export async function GET() {
     .where(isNotNull(deals.nextHearing))
     .orderBy(asc(deals.nextHearing));
 
-  return NextResponse.json(items);
+  const tareasRows = await db
+    .select({
+      id: tareas.id,
+      dealId: tareas.dealId,
+      contactId: tareas.contactId,
+      tipo: tareas.tipo,
+      titulo: tareas.titulo,
+      descripcion: tareas.descripcion,
+      fecha: tareas.fecha,
+      completada: tareas.completada,
+      dealTitle: deals.title,
+      contactName: contacts.name,
+      caseType: deals.caseType,
+    })
+    .from(tareas)
+    .leftJoin(deals, eq(tareas.dealId, deals.id))
+    .leftJoin(contacts, eq(tareas.contactId, contacts.id))
+    .orderBy(asc(tareas.fecha));
+
+  return NextResponse.json({ vencimientos, tareas: tareasRows });
 }
 
 export async function PUT(request: NextRequest) {

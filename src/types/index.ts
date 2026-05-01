@@ -11,6 +11,8 @@ export type LeadSource =
 
 export type CaseType = "civil" | "laboral" | "familia" | "penal" | "comercial" | "otro";
 
+export type TipoTarea = "vencimiento_judicial" | "tarea_procuracion";
+
 export interface Contact {
   id: string;
   name: string;
@@ -87,6 +89,24 @@ export interface CrmConfig {
     language: "es" | "en";
     theme: "light" | "dark" | "auto";
   };
+}
+
+export interface Tarea {
+  id: string;
+  dealId: string;
+  contactId: string;
+  tipo: TipoTarea;
+  titulo: string;
+  descripcion: string | null;
+  fecha: Date;
+  completada: boolean;
+  createdAt: Date;
+}
+
+export interface TareaWithDeal extends Tarea {
+  dealTitle?: string | null;
+  contactName?: string | null;
+  caseType?: CaseType | null;
 }
 
 // API response types

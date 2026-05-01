@@ -11,6 +11,7 @@ import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/constants"
 import { ACTIVITY_TYPE_CONFIG, CASE_TYPE_LABELS } from "@/lib/constants";
 import { PaymentsList } from "@/components/payments/PaymentsList";
 import { WhatsAppButton } from "@/components/whatsapp/WhatsAppButton";
+import { DealTareasSection } from "@/components/deals/DealTareasSection";
 
 export const dynamic = "force-dynamic";
 
@@ -215,6 +216,8 @@ export default async function DealDetailPage({
           </CardContent>
         </Card>
       )}
+
+      <DealTareasSection dealId={id} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PaymentsList dealId={id} agreedFees={deal.agreedFees} />

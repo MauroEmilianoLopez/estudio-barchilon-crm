@@ -1,11 +1,11 @@
 import { db } from "@/db";
-import { contacts, deals, activities, payments, pipelineStages } from "@/db/schema";
-import { eq, asc, desc, gte, sql, isNotNull, and, lte } from "drizzle-orm";
+import { contacts, deals, activities, payments, pipelineStages, tareas } from "@/db/schema";
+import { eq, asc, desc, gte, sql, and, lte } from "drizzle-orm";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { PipelineChart } from "@/components/dashboard/PipelineChart";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { NotificationBanner } from "@/components/dashboard/NotificationBanner";
-import { TodaySection } from "@/components/dashboard/TodaySection";
+import { TodaySection, OtherPendingSection } from "@/components/dashboard/TodaySection";
 import type { DashboardStats } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -60,13 +60,32 @@ export default async function DashboardPage() {
       dealId: deals.id,
       dealTitle: deals.title,
       contactName: contacts.name,
+      esPerentorio: deals.esPerentorio,
     })
     .from(deals)
     .leftJoin(contacts, eq(deals.contactId, contacts.id))
     .where(
       and(
         gte(deals.nextHearing, startOfDay),
-        lte(deals.nextHearing, endOfDay)
+        lte(deals.nextHearing, endOfDay),
+        eq(deals.hearingStatus, "pendiente")
+      )
+    );
+
+  const todayTareas = await db
+    .select({
+      id: tareas.id,
+      dealId: tareas.dealId,
+      titulo: tareas.titulo,
+      contactName: contacts.name,
+    })
+    .from(tareas)
+    .leftJoin(contacts, eq(tareas.contactId, contacts.id))
+    .where(
+      and(
+        gte(tareas.fecha, startOfDay),
+        lte(tareas.fecha, endOfDay),
+        eq(tareas.completada, false)
       )
     );
 
@@ -269,7 +288,11 @@ export default async function DashboardPage() {
       )}
 
       <TodaySection
-        hearings={todayHearings}
+        vencimientosHoy={todayHearings}
+        tareasHoy={todayTareas}
+      />
+
+      <OtherPendingSection
         staleContacts={staleContacts}
         overduePayments={overduePayments}
       />

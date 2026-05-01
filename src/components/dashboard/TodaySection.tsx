@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Gavel, Clock, DollarSign, Plus } from "lucide-react";
+import { Clock, DollarSign, Plus } from "lucide-react";
 import { formatCurrency } from "@/lib/constants";
 import { toast } from "sonner";
 import Link from "next/link";
 
-interface HearingItem {
+interface VencimientoHoy {
   dealId: string;
   dealTitle: string;
+  contactName: string | null;
+  esPerentorio: boolean | number | null;
+}
+
+interface TareaHoy {
+  id: string;
+  dealId: string;
+  titulo: string;
   contactName: string | null;
 }
 
@@ -29,48 +37,117 @@ interface OverduePaymentItem {
 }
 
 interface TodaySectionProps {
-  hearings: HearingItem[];
-  staleContacts: StaleContactItem[];
-  overduePayments: OverduePaymentItem[];
+  vencimientosHoy: VencimientoHoy[];
+  tareasHoy: TareaHoy[];
 }
 
-export function TodaySection({ hearings, staleContacts, overduePayments }: TodaySectionProps) {
-  const isEmpty = hearings.length === 0 && staleContacts.length === 0 && overduePayments.length === 0;
-  if (isEmpty) return null;
+export function TodaySection({ vencimientosHoy, tareasHoy }: TodaySectionProps) {
+  if (vencimientosHoy.length === 0 && tareasHoy.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <HearingsCard hearings={hearings} />
-      <StaleContactsCard contacts={staleContacts} />
-      <OverduePaymentsCard payments={overduePayments} />
+    <div>
+      <h2 className="text-lg font-semibold mb-3">Hoy</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <VencimientosHoyCard items={vencimientosHoy} />
+        <TareasHoyCard items={tareasHoy} />
+      </div>
     </div>
   );
 }
 
-function HearingsCard({ hearings }: { hearings: HearingItem[] }) {
+function VencimientosHoyCard({ items }: { items: VencimientoHoy[] }) {
   return (
-    <Card className="border-t-4 border-t-blue-500">
+    <Card style={{ background: "#fef2f2", borderColor: "#fecaca", borderWidth: 1, borderTopWidth: 4, borderTopColor: "#dc2626" }}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2 text-blue-700">
-          <Gavel className="h-4 w-4" />
-          Audiencias de hoy
+        <CardTitle className="text-base flex items-center gap-2" style={{ color: "#991b1b" }}>
+          <span>🔴</span>
+          Vencimientos de hoy
+          <span className="ml-auto text-sm font-bold rounded-full px-2 py-0.5 text-white" style={{ background: "#dc2626" }}>
+            {items.length}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {hearings.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sin audiencias hoy</p>
+        {items.length === 0 ? (
+          <p className="text-sm" style={{ color: "#991b1b", opacity: 0.7 }}>Sin vencimientos hoy</p>
         ) : (
           <div className="space-y-2">
-            {hearings.map((h) => (
-              <Link key={h.dealId} href={`/deals/${h.dealId}`} className="block p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                <p className="text-sm font-medium">{h.dealTitle}</p>
-                <p className="text-xs text-muted-foreground">{h.contactName || "Sin cliente"}</p>
+            {items.map((v) => (
+              <Link
+                key={v.dealId}
+                href={`/deals/${v.dealId}`}
+                className="block p-3 rounded-lg bg-white border transition-colors hover:bg-red-50"
+                style={{ borderColor: "#fecaca", minHeight: 52 }}
+              >
+                <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>
+                  {v.contactName || "Sin cliente"}
+                  {(v.esPerentorio === true || v.esPerentorio === 1) && (
+                    <span className="ml-2 text-[10px] font-extrabold tracking-wider rounded px-1.5 py-0.5 text-white" style={{ background: "#dc2626" }}>
+                      PERENTORIO
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">{v.dealTitle}</p>
               </Link>
             ))}
           </div>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function TareasHoyCard({ items }: { items: TareaHoy[] }) {
+  return (
+    <Card style={{ background: "#eff6ff", borderColor: "#bfdbfe", borderWidth: 1, borderTopWidth: 4, borderTopColor: "#2563eb" }}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2" style={{ color: "#1e40af" }}>
+          <span>🔵</span>
+          Tareas de procuracion
+          <span className="ml-auto text-sm font-bold rounded-full px-2 py-0.5 text-white" style={{ background: "#2563eb" }}>
+            {items.length}
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {items.length === 0 ? (
+          <p className="text-sm" style={{ color: "#1e40af", opacity: 0.7 }}>Sin tareas para hoy</p>
+        ) : (
+          <div className="space-y-2">
+            {items.map((t) => (
+              <Link
+                key={t.id}
+                href={`/deals/${t.dealId}`}
+                className="block p-3 rounded-lg bg-white border transition-colors hover:bg-blue-50"
+                style={{ borderColor: "#bfdbfe", minHeight: 52 }}
+              >
+                <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>{t.titulo}</p>
+                <p className="text-xs text-muted-foreground truncate">{t.contactName || "Sin cliente"}</p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+interface OtherPendingProps {
+  staleContacts: StaleContactItem[];
+  overduePayments: OverduePaymentItem[];
+}
+
+export function OtherPendingSection({ staleContacts, overduePayments }: OtherPendingProps) {
+  if (staleContacts.length === 0 && overduePayments.length === 0) return null;
+
+  return (
+    <div>
+      <h2 className="text-lg font-semibold mb-3">Otros pendientes</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <StaleContactsCard contacts={staleContacts} />
+        <OverduePaymentsCard payments={overduePayments} />
+      </div>
+    </div>
   );
 }
 

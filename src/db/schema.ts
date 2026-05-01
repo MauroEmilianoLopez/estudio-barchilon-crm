@@ -102,3 +102,23 @@ export const crmSettings = sqliteTable("crm_settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
 });
+
+export const tareas = sqliteTable("tareas", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  dealId: text("deal_id")
+    .notNull()
+    .references(() => deals.id),
+  contactId: text("contact_id")
+    .notNull()
+    .references(() => contacts.id),
+  tipo: text("tipo").notNull().default("tarea_procuracion"),
+  titulo: text("titulo").notNull(),
+  descripcion: text("descripcion"),
+  fecha: integer("fecha", { mode: "timestamp" }).notNull(),
+  completada: integer("completada", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
