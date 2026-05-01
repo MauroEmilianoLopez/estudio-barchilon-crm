@@ -32,7 +32,7 @@ interface DealCardProps {
   probability: number;
   agreedFees: number | null;
   paidAmount: number;
-  contactCaseType: string | null;
+  caseType: string | null;
 }
 
 function PaymentBadge({ agreedFees, paidAmount }: { agreedFees: number | null; paidAmount: number }) {
@@ -76,7 +76,7 @@ export function DealCard({
   contactName,
   agreedFees,
   paidAmount,
-  contactCaseType,
+  caseType,
 }: DealCardProps) {
   const {
     attributes,
@@ -87,8 +87,8 @@ export function DealCard({
     isDragging,
   } = useSortable({ id });
 
-  const borderColor = CASE_TYPE_COLORS[contactCaseType || "otro"] || CASE_TYPE_COLORS.otro;
-  const caseLabel = CASE_TYPE_LABELS[contactCaseType || ""] || null;
+  const borderColor = CASE_TYPE_COLORS[caseType || "otro"] || CASE_TYPE_COLORS.otro;
+  const caseLabel = CASE_TYPE_LABELS[caseType || ""] || null;
 
   const style = {
     transform: CSS.Transform.toString(transform),

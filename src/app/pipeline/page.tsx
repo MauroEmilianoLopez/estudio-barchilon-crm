@@ -28,9 +28,13 @@ export default async function PipelinePage() {
       internalNotes: deals.internalNotes,
       createdAt: deals.createdAt,
       updatedAt: deals.updatedAt,
+      esPerentorio: deals.esPerentorio,
+      caseType: deals.caseType,
+      caseNumber: deals.caseNumber,
+      court: deals.court,
+      caseStartDate: deals.caseStartDate,
       contactName: contacts.name,
       contactTemperature: contacts.temperature,
-      contactCaseType: contacts.caseType,
     })
     .from(deals)
     .leftJoin(contacts, eq(deals.contactId, contacts.id));
@@ -51,12 +55,16 @@ export default async function PipelinePage() {
         agreedFees: d.agreedFees,
         paidAmount: d.paidAmount,
         nextHearing: d.nextHearing,
+        esPerentorio: d.esPerentorio,
+        caseType: d.caseType,
+        caseNumber: d.caseNumber,
+        court: d.court,
+        caseStartDate: d.caseStartDate,
         internalNotes: d.internalNotes,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,
         contactName: d.contactName,
         contactTemperature: d.contactTemperature,
-        contactCaseType: d.contactCaseType,
       })) as PipelineColumn["deals"],
   }));
 

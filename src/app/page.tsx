@@ -124,6 +124,49 @@ export default async function DashboardPage() {
     })
     .sort((a, b) => b.pending - a.pending);
 
+  // 4. Casos perentorios con fecha proxima (manana o pasado)
+  const tomorrow = new Date(startOfDay.getTime() + 86400000);
+  const dayAfterTomorrow = new Date(startOfDay.getTime() + 3 * 86400000);
+
+  const perentorioAlerts = await db
+    .select({
+      dealId: deals.id,
+      dealTitle: deals.title,
+      contactName: contacts.name,
+      nextHearing: deals.nextHearing,
+    })
+    .from(deals)
+    .leftJoin(contacts, eq(deals.contactId, contacts.id))
+    .where(
+      and(
+        eq(deals.esPerentorio, true),
+        gte(deals.nextHearing, tomorrow),
+        lte(deals.nextHearing, dayAfterTomorrow),
+        eq(deals.hearingStatus, "pendiente")
+      )
+    );
+
+  // Also check today's perentorio
+  const perentorioToday = await db
+    .select({
+      dealId: deals.id,
+      dealTitle: deals.title,
+      contactName: contacts.name,
+      nextHearing: deals.nextHearing,
+    })
+    .from(deals)
+    .leftJoin(contacts, eq(deals.contactId, contacts.id))
+    .where(
+      and(
+        eq(deals.esPerentorio, true),
+        gte(deals.nextHearing, startOfDay),
+        lte(deals.nextHearing, endOfDay),
+        eq(deals.hearingStatus, "pendiente")
+      )
+    );
+
+  const allPerentorioAlerts = [...perentorioToday, ...perentorioAlerts];
+
   // --- FIN SECCION HOY ---
 
   const pipelineData = stages
@@ -160,6 +203,39 @@ export default async function DashboardPage() {
           Resumen del estudio
         </p>
       </div>
+
+      {allPerentorioAlerts.length > 0 && (
+        <div className="space-y-2">
+          {allPerentorioAlerts.map((alert) => {
+            const hearingDate = alert.nextHearing instanceof Date
+              ? alert.nextHearing
+              : new Date(typeof alert.nextHearing === "number"
+                ? (alert.nextHearing < 1e12 ? alert.nextHearing * 1000 : alert.nextHearing)
+                : alert.nextHearing!);
+            const daysUntil = Math.ceil((hearingDate.getTime() - now.getTime()) / 86400000);
+            const daysLabel = daysUntil <= 0 ? "HOY" : daysUntil === 1 ? "1 DIA" : `${daysUntil} DIAS`;
+            return (
+              <a
+                key={alert.dealId}
+                href={`/deals/${alert.dealId}`}
+                className="block rounded-xl border-2 border-red-600 bg-red-600 text-white p-4 md:p-6 shadow-lg animate-pulse"
+              >
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="text-2xl md:text-3xl font-black tracking-tight">
+                    PLAZO PERENTORIO VENCE EN {daysLabel}
+                  </span>
+                </div>
+                <div className="mt-2 text-lg md:text-xl font-semibold">
+                  {alert.dealTitle} — {alert.contactName || "Sin cliente"}
+                </div>
+                <p className="mt-1 text-sm text-red-100">
+                  El incumplimiento hace perder el derecho. Toca para ver el caso.
+                </p>
+              </a>
+            );
+          })}
+        </div>
+      )}
 
       {isFirstRun && (
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-6">

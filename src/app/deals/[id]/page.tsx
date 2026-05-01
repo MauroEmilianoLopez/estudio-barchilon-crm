@@ -6,9 +6,9 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, DollarSign, FileText, Gavel, Scale, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, FileText, Gavel, Scale, CheckCircle, AlertTriangle, XCircle, Hash, Landmark, AlertOctagon } from "lucide-react";
 import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/constants";
-import { ACTIVITY_TYPE_CONFIG } from "@/lib/constants";
+import { ACTIVITY_TYPE_CONFIG, CASE_TYPE_LABELS } from "@/lib/constants";
 import { PaymentsList } from "@/components/payments/PaymentsList";
 import { WhatsAppButton } from "@/components/whatsapp/WhatsAppButton";
 
@@ -170,6 +170,51 @@ export default async function DealDetailPage({
           </Card>
         )}
       </div>
+
+      {/* Datos del expediente */}
+      {(deal.caseNumber || deal.court || deal.caseType || deal.caseStartDate || deal.esPerentorio) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              Expediente
+              {deal.esPerentorio && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-300">
+                  <AlertOctagon className="h-3 w-3" />
+                  PERENTORIO
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {deal.caseType && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Scale className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{CASE_TYPE_LABELS[deal.caseType] || deal.caseType}</span>
+                </div>
+              )}
+              {deal.caseNumber && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Hash className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>Exp. {deal.caseNumber}</span>
+                </div>
+              )}
+              {deal.court && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Landmark className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{deal.court}</span>
+                </div>
+              )}
+              {deal.caseStartDate && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>Inicio: {formatDate(deal.caseStartDate)}</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PaymentsList dealId={id} agreedFees={deal.agreedFees} />

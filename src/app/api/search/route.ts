@@ -19,15 +19,13 @@ export async function GET(request: NextRequest) {
       name: contacts.name,
       email: contacts.email,
       phone: contacts.phone,
-      caseNumber: contacts.caseNumber,
     })
     .from(contacts)
     .where(
       or(
         like(contacts.name, pattern),
         like(contacts.email, pattern),
-        like(contacts.phone, pattern),
-        like(contacts.caseNumber, pattern)
+        like(contacts.phone, pattern)
       )
     )
     .limit(5);
@@ -37,8 +35,8 @@ export async function GET(request: NextRequest) {
       id: deals.id,
       title: deals.title,
       contactName: contacts.name,
-      contactCaseNumber: contacts.caseNumber,
-      contactCourt: contacts.court,
+      caseNumber: deals.caseNumber,
+      court: deals.court,
       stageName: pipelineStages.name,
       stageColor: pipelineStages.color,
     })
@@ -49,8 +47,8 @@ export async function GET(request: NextRequest) {
       or(
         like(deals.title, pattern),
         like(contacts.name, pattern),
-        like(contacts.caseNumber, pattern),
-        like(contacts.court, pattern)
+        like(deals.caseNumber, pattern),
+        like(deals.court, pattern)
       )
     )
     .limit(5);

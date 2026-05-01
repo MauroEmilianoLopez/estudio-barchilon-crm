@@ -47,10 +47,6 @@ async function init() {
       temperature TEXT NOT NULL DEFAULT 'cold',
       score INTEGER NOT NULL DEFAULT 0,
       notes TEXT,
-      case_type TEXT,
-      case_number TEXT,
-      court TEXT,
-      case_start_date INTEGER,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )`,
@@ -75,6 +71,11 @@ async function init() {
       paid_amount INTEGER NOT NULL DEFAULT 0,
       next_hearing INTEGER,
       hearing_status TEXT NOT NULL DEFAULT 'pendiente',
+      es_perentorio INTEGER NOT NULL DEFAULT 0,
+      case_type TEXT,
+      case_number TEXT,
+      court TEXT,
+      case_start_date INTEGER,
       internal_notes TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
@@ -106,6 +107,29 @@ async function init() {
   ]);
 
   console.log("Tables created.");
+
+  // Migrations: add new columns if they don't exist (for existing databases)
+  const migrations = [
+    { table: "deals", column: "es_perentorio", sql: `ALTER TABLE deals ADD COLUMN es_perentorio INTEGER NOT NULL DEFAULT 0` },
+    { table: "deals", column: "case_type", sql: `ALTER TABLE deals ADD COLUMN case_type TEXT` },
+    { table: "deals", column: "case_number", sql: `ALTER TABLE deals ADD COLUMN case_number TEXT` },
+    { table: "deals", column: "court", sql: `ALTER TABLE deals ADD COLUMN court TEXT` },
+    { table: "deals", column: "case_start_date", sql: `ALTER TABLE deals ADD COLUMN case_start_date INTEGER` },
+  ];
+
+  for (const m of migrations) {
+    try {
+      await client.execute(m.sql);
+      console.log(`Migration: added ${m.column} to ${m.table}`);
+    } catch (e: unknown) {
+      // Column already exists — ignore
+      if (e instanceof Error && e.message.includes("duplicate column")) {
+        // Already migrated
+      } else {
+        console.log(`Migration ${m.column}: already exists or skipped`);
+      }
+    }
+  }
 
   // Seed default pipeline stages
   const stageCount = await client.execute("SELECT COUNT(*) as count FROM pipeline_stages");

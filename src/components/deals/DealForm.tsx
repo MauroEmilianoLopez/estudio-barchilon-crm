@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,11 @@ const dealSchema = z.object({
   agreedFees: z.string(),
   paidAmount: z.string(),
   nextHearing: z.string(),
+  esPerentorio: z.boolean(),
+  caseType: z.string(),
+  caseNumber: z.string(),
+  court: z.string(),
+  caseStartDate: z.string(),
   internalNotes: z.string(),
 });
 
@@ -73,6 +79,11 @@ export function DealForm({ open, onClose }: DealFormProps) {
       agreedFees: "",
       paidAmount: "",
       nextHearing: "",
+      esPerentorio: false,
+      caseType: "",
+      caseNumber: "",
+      court: "",
+      caseStartDate: "",
       internalNotes: "",
     },
   });
@@ -92,6 +103,11 @@ export function DealForm({ open, onClose }: DealFormProps) {
           agreedFees,
           paidAmount,
           nextHearing: data.nextHearing || null,
+          esPerentorio: data.esPerentorio,
+          caseType: data.caseType || null,
+          caseNumber: data.caseNumber || null,
+          court: data.court || null,
+          caseStartDate: data.caseStartDate || null,
           internalNotes: data.internalNotes || null,
         }),
       });
@@ -197,10 +213,66 @@ export function DealForm({ open, onClose }: DealFormProps) {
           </div>
 
           <div className="border-t pt-4 mt-2">
-            <p className="text-sm font-medium text-muted-foreground mb-3">Datos del caso</p>
+            <p className="text-sm font-medium text-muted-foreground mb-3">Datos del expediente</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Tipo de causa</Label>
+                <Select
+                  value={watch("caseType")}
+                  onValueChange={(v) => v && setValue("caseType", v)}
+                >
+                  <SelectTrigger className="cursor-pointer">
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="civil">Civil</SelectItem>
+                    <SelectItem value="laboral">Laboral</SelectItem>
+                    <SelectItem value="familia">Familia</SelectItem>
+                    <SelectItem value="penal">Penal</SelectItem>
+                    <SelectItem value="comercial">Comercial</SelectItem>
+                    <SelectItem value="otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="caseNumber">N° de expediente</Label>
+                <Input id="caseNumber" {...register("caseNumber")} placeholder="Ej: 12345/2026" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              <div className="space-y-2">
+                <Label htmlFor="court">Tribunal / Juzgado</Label>
+                <Input id="court" {...register("court")} placeholder="Ej: Juzgado Civil N°5" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="caseStartDate">Inicio del caso</Label>
+                <Input id="caseStartDate" type="date" {...register("caseStartDate")} />
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4 mt-2">
+            <p className="text-sm font-medium text-muted-foreground mb-3">Fechas y plazos</p>
             <div className="space-y-2">
               <Label htmlFor="nextHearing">Proxima fecha de actuacion</Label>
               <Input id="nextHearing" type="date" {...register("nextHearing")} />
+              <p className="text-xs text-muted-foreground">Recordatorio: En Argentina el plazo vence a las 9:00 del dia posterior</p>
+            </div>
+            <div className="flex items-start gap-3 mt-4 p-3 rounded-lg border border-amber-200 bg-amber-50">
+              <Checkbox
+                id="esPerentorio"
+                checked={watch("esPerentorio")}
+                onCheckedChange={(checked) => setValue("esPerentorio", checked === true)}
+                className="mt-0.5 cursor-pointer"
+              />
+              <div>
+                <Label htmlFor="esPerentorio" className="text-sm font-semibold text-amber-900 cursor-pointer">
+                  Plazo perentorio
+                </Label>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  El incumplimiento hace perder el derecho. Se mostrara una alerta critica cuando el plazo este por vencer.
+                </p>
+              </div>
             </div>
             <div className="space-y-2 mt-3">
               <Label htmlFor="deal-notes">Notas</Label>

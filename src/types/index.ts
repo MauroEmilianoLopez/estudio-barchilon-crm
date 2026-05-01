@@ -21,10 +21,6 @@ export interface Contact {
   temperature: Temperature;
   score: number;
   notes: string | null;
-  caseType: CaseType | null;
-  caseNumber: string | null;
-  court: string | null;
-  caseStartDate: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +37,11 @@ export interface Deal {
   agreedFees: number | null; // in cents
   paidAmount: number; // in cents
   nextHearing: Date | null;
+  esPerentorio: boolean;
+  caseType: CaseType | null;
+  caseNumber: string | null;
+  court: string | null;
+  caseStartDate: Date | null;
   internalNotes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -94,7 +95,6 @@ export interface DealWithContact extends Deal {
   stage?: PipelineStage;
   contactName?: string | null;
   contactTemperature?: string | null;
-  contactCaseType?: string | null;
 }
 
 export interface ContactWithDeals extends Contact {

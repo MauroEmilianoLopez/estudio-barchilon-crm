@@ -32,6 +32,7 @@ interface AgendaItem {
   contactName: string | null;
   contactPhone: string | null;
   caseType: string | null;
+  esPerentorio: boolean | number | null;
 }
 
 function toDate(v: number | string | Date): Date {
@@ -250,6 +251,7 @@ export default function AgendaPage() {
                   onChange={(e) => setRescheduleDate(e.target.value)}
                   style={{ width: "100%", height: 48, fontSize: 16, padding: "0 12px", borderRadius: 8, border: "1px solid #e2e8f0" }}
                 />
+                <p style={{ fontSize: 12, color: "#94a3b8", marginTop: 6 }}>Recordatorio: En Argentina el plazo vence a las 9:00 del dia posterior</p>
               </div>
               <div style={{ display: "flex", gap: 12, marginTop: "auto" }}>
                 <button
@@ -275,6 +277,10 @@ export default function AgendaPage() {
         @keyframes slideUp {
           from { transform: translateY(100%); }
           to { transform: translateY(0); }
+        }
+        @keyframes perentorioPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+          50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
         }
       `}</style>
     </div>
@@ -307,6 +313,7 @@ function AgendaCard({ item, variant, now, onRealized, onReschedule, onActivity, 
 }) {
   const d = toDate(item.nextHearing);
   const days = Math.ceil((d.getTime() - now.getTime()) / 86400000);
+  const isPerentorio = item.esPerentorio === true || item.esPerentorio === 1;
 
   const daysLabel = variant === "overdue"
     ? `Hace ${Math.abs(days)} dia${Math.abs(days) !== 1 ? "s" : ""}`
@@ -317,7 +324,7 @@ function AgendaCard({ item, variant, now, onRealized, onReschedule, onActivity, 
   const daysLabelBg = (variant === "overdue" || variant === "urgent") ? "#dc2626" : variant === "today" ? "#2563eb" : "#f1f5f9";
   const daysLabelFg = (variant === "overdue" || variant === "urgent" || variant === "today") ? "white" : "#64748b";
 
-  const borderLeft = variant === "today" ? "#3b82f6" : (variant === "overdue" || variant === "urgent") ? "#ef4444" : "#d1d5db";
+  const borderLeft = isPerentorio ? "#dc2626" : variant === "today" ? "#3b82f6" : (variant === "overdue" || variant === "urgent") ? "#ef4444" : "#d1d5db";
   const cardBg = variant === "today" ? "#eff6ff" : "white";
 
   const ct = item.caseType || "otro";
@@ -331,6 +338,9 @@ function AgendaCard({ item, variant, now, onRealized, onReschedule, onActivity, 
       boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
       marginBottom: 12,
       borderLeft: `4px solid ${borderLeft}`,
+      border: isPerentorio ? "2px solid #dc2626" : undefined,
+      borderLeftWidth: isPerentorio ? 4 : undefined,
+      animation: isPerentorio ? "perentorioPulse 2s ease-in-out infinite" : undefined,
     }}>
       {/* Linea 1: nombre cliente */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
@@ -344,6 +354,25 @@ function AgendaCard({ item, variant, now, onRealized, onReschedule, onActivity, 
           {daysLabel}
         </span>
       </div>
+
+      {/* Etiqueta perentorio */}
+      {isPerentorio && (
+        <div style={{
+          marginTop: 8,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          background: "#dc2626",
+          color: "white",
+          fontSize: 11,
+          fontWeight: 800,
+          padding: "3px 10px",
+          borderRadius: 6,
+          letterSpacing: "0.05em",
+        }}>
+          PERENTORIO
+        </div>
+      )}
 
       {/* Linea 2: tipo de causa + fecha */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>

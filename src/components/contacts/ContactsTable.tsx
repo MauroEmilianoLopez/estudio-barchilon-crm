@@ -109,11 +109,6 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
               </div>
             </div>
             <div className="flex items-center gap-2 mt-3">
-              {contact.caseType && (
-                <span className="text-xs font-medium px-2 py-1 rounded bg-muted">
-                  {({ civil: "Civil", laboral: "Laboral", penal: "Penal", familia: "Familia", comercial: "Comercial", otro: "Otro" }[contact.caseType] || contact.caseType)}
-                </span>
-              )}
               {contact.score >= 70 ? (
                 <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-700">Urgente</span>
               ) : contact.score >= 40 ? (
@@ -132,7 +127,6 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Nombre</TableHead>
-              <TableHead>Tipo de causa</TableHead>
               <TableHead className="hidden lg:table-cell">Fuente</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Prioridad</TableHead>
@@ -152,11 +146,6 @@ export function ContactsTable({ contacts }: ContactsTableProps) {
                     <p className="font-medium">{contact.name}</p>
                     <p className="text-xs text-muted-foreground">{contact.email || "Sin email"}</p>
                   </div>
-                </TableCell>
-                <TableCell>
-                  {contact.caseType
-                    ? ({ civil: "Civil", laboral: "Laboral", penal: "Penal", familia: "Familia", comercial: "Comercial", otro: "Otro" }[contact.caseType] || contact.caseType)
-                    : "-"}
                 </TableCell>
                 <TableCell className="hidden lg:table-cell text-sm">
                   {SOURCE_LABELS[contact.source as LeadSource] || contact.source}

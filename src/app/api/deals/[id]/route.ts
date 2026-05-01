@@ -65,6 +65,13 @@ export async function PUT(
   if (body.nextHearing !== undefined) {
     updateData.nextHearing = body.nextHearing ? new Date(body.nextHearing) : null;
   }
+  if (body.esPerentorio !== undefined) updateData.esPerentorio = body.esPerentorio === true;
+  if (body.caseType !== undefined) updateData.caseType = body.caseType || null;
+  if (body.caseNumber !== undefined) updateData.caseNumber = body.caseNumber || null;
+  if (body.court !== undefined) updateData.court = body.court || null;
+  if (body.caseStartDate !== undefined) {
+    updateData.caseStartDate = body.caseStartDate ? new Date(body.caseStartDate) : null;
+  }
   if (body.internalNotes !== undefined) updateData.internalNotes = body.internalNotes;
 
   const [result] = await db

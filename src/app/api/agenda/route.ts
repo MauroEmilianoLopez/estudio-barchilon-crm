@@ -13,7 +13,8 @@ export async function GET() {
       contactId: deals.contactId,
       contactName: contacts.name,
       contactPhone: contacts.phone,
-      caseType: contacts.caseType,
+      caseType: deals.caseType,
+      esPerentorio: deals.esPerentorio,
     })
     .from(deals)
     .leftJoin(contacts, eq(deals.contactId, contacts.id))

@@ -31,10 +31,6 @@ const contactSchema = z.object({
   source: z.string(),
   temperature: z.enum(["cold", "warm", "hot"]),
   notes: z.string(),
-  caseType: z.string(),
-  caseNumber: z.string(),
-  court: z.string(),
-  caseStartDate: z.string(),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -66,10 +62,6 @@ export function ContactForm({ open, onClose, initialData }: ContactFormProps) {
       source: initialData?.source || "otro",
       temperature: initialData?.temperature || "cold",
       notes: initialData?.notes || "",
-      caseType: initialData?.caseType || "",
-      caseNumber: initialData?.caseNumber || "",
-      court: initialData?.court || "",
-      caseStartDate: initialData?.caseStartDate || "",
     },
   });
 
@@ -164,45 +156,6 @@ export function ContactForm({ open, onClose, initialData }: ContactFormProps) {
                   <SelectItem value="hot">Urgente</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <div className="border-t pt-4 mt-4">
-            <p className="text-sm font-medium text-muted-foreground mb-3">Datos del caso</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Tipo de causa</Label>
-                <Select
-                  value={watch("caseType")}
-                  onValueChange={(v) => v && setValue("caseType", v)}
-                >
-                  <SelectTrigger className="cursor-pointer">
-                    <SelectValue placeholder="Seleccionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="civil">Civil</SelectItem>
-                    <SelectItem value="laboral">Laboral</SelectItem>
-                    <SelectItem value="familia">Familia</SelectItem>
-                    <SelectItem value="penal">Penal</SelectItem>
-                    <SelectItem value="comercial">Comercial</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="caseNumber">N° de expediente</Label>
-                <Input id="caseNumber" {...register("caseNumber")} placeholder="Ej: 12345/2026" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3 mt-3">
-              <div className="space-y-2">
-                <Label htmlFor="court">Tribunal / Juzgado</Label>
-                <Input id="court" {...register("court")} placeholder="Ej: Juzgado Civil N°5" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="caseStartDate">Inicio del caso</Label>
-                <Input id="caseStartDate" type="date" {...register("caseStartDate")} />
-              </div>
             </div>
           </div>
 

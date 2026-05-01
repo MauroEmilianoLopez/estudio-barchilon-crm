@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, Menu, User, Briefcase } from "lucide-react";
+import { Search, Bell, Menu, User, Briefcase, LogOut } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -13,7 +14,6 @@ interface SearchContact {
   name: string;
   email: string | null;
   phone: string | null;
-  caseNumber: string | null;
 }
 
 interface SearchDeal {
@@ -141,7 +141,7 @@ export function Header() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{c.name}</p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {c.email || c.phone || (c.caseNumber ? `Exp. ${c.caseNumber}` : "Sin datos")}
+                          {c.email || c.phone || "Sin datos"}
                         </p>
                       </div>
                     </button>
@@ -182,6 +182,15 @@ export function Header() {
       <Button variant="ghost" size="icon" className="relative cursor-pointer hidden md:inline-flex">
         <Bell className="h-5 w-5" />
       </Button>
+
+      {/* Clerk: boton de usuario con logout */}
+      <UserButton
+        appearance={{
+          elements: {
+            avatarBox: "h-8 w-8",
+          },
+        }}
+      />
     </header>
   );
 }

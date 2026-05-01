@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -32,26 +33,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Clerk Authentication:
+  // Configura NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY y CLERK_SECRET_KEY en .env
+  // Obtener las keys en: https://dashboard.clerk.com
   return (
     <html lang="es" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full" suppressHydrationWarning>
-        <TooltipProvider>
-          <div className="flex min-h-full">
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-h-screen min-w-0">
-              <Header />
-              <main
-                className="flex-1 p-3 md:p-6 bg-background overflow-x-hidden"
-                style={{ paddingBottom: "env(safe-area-inset-bottom, 80px)" }}
-              >
-                {children}
-              </main>
+        <ClerkProvider>
+          <TooltipProvider>
+            <div className="flex min-h-full">
+              <Sidebar />
+              <div className="flex-1 flex flex-col min-h-screen min-w-0">
+                <Header />
+                <main
+                  className="flex-1 p-3 md:p-6 bg-background overflow-x-hidden"
+                  style={{ paddingBottom: "env(safe-area-inset-bottom, 80px)" }}
+                >
+                  {children}
+                </main>
+              </div>
             </div>
-          </div>
-          <BottomNav />
-          <Toaster />
-          <NotificationChecker />
-        </TooltipProvider>
+            <BottomNav />
+            <Toaster />
+            <NotificationChecker />
+          </TooltipProvider>
+        </ClerkProvider>
       </body>
     </html>
   );
