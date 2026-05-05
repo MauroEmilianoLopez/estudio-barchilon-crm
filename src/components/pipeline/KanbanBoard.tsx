@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import type { PipelineColumn } from "@/types";
 import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
 
-const WON_STAGE_NAME = "Cerrado ganado";
+const WON_STAGE_NAME = "Etapa final";
 
 interface WonNotification {
   contactName: string;

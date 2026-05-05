@@ -134,7 +134,7 @@ async function seed() {
       id: crypto.randomUUID(),
       title: "Servicio Premium - Agencia Creativa",
       value: 450000,
-      stage_id: stageMap.get("En negociacion") || stageMap.get("Negociacion") || (stages[3].id as string),
+      stage_id: stageMap.get("Mediaciones") || stageMap.get("En negociacion") || (stages[3].id as string),
       contact_id: contacts[4].id,
       expected_close: now + 7 * day,
       probability: 85,
