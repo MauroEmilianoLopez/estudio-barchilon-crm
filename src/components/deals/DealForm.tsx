@@ -24,7 +24,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
+import { WhatsAppModal, buildMessage, formatHearingDate } from "@/components/whatsapp/WhatsAppModal";
+import { tryNotify } from "@/lib/whatsappNotify";
 
 const dealSchema = z.object({
   title: z.string().min(1, "El titulo es requerido"),
@@ -183,13 +184,23 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
       const contact = contactsList.find((c) => c.id === data.contactId);
 
       if (hearingChanged && contact?.phone) {
-        setPendingNotification({
-          contactName: contact.name,
-          contactPhone: contact.phone,
-          dealTitle: data.title,
-          nextHearing: data.nextHearing,
+        const contactPhone = contact.phone;
+        const contactName = contact.name;
+        const dealForMsg = { title: data.title, agreedFees: null, paidAmount: 0, nextHearing: data.nextHearing };
+        const message = buildMessage("audiencia", {
+          contactName,
+          deal: { ...dealForMsg, nextHearing: formatHearingDate(dealForMsg) },
         });
-        setWhatsappOpen(true);
+        const sent = await tryNotify({ phone: contactPhone, message, contactName });
+        if (!sent) {
+          setPendingNotification({
+            contactName,
+            contactPhone,
+            dealTitle: data.title,
+            nextHearing: data.nextHearing,
+          });
+          setWhatsappOpen(true);
+        }
       }
 
       reset();

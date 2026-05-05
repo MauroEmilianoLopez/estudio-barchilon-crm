@@ -22,7 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
+import { WhatsAppModal, buildMessage } from "@/components/whatsapp/WhatsAppModal";
+import { tryNotify } from "@/lib/whatsappNotify";
 
 const paymentSchema = z.object({
   date: z.string().min(1, "La fecha es requerida"),
@@ -92,7 +93,13 @@ export function PaymentForm({ open, onClose, dealId, dealTitle, contactName, con
 
       if (contactPhone) {
         setLastPaymentAmount(amountCents);
-        setWhatsappOpen(true);
+        const message = buildMessage("confirmacion_pago", {
+          contactName,
+          deal: { title: dealTitle, agreedFees: null, paidAmount: 0, nextHearing: null },
+          paymentAmount: amountCents,
+        });
+        const sent = await tryNotify({ phone: contactPhone, message, contactName });
+        if (!sent) setWhatsappOpen(true);
       }
     } catch {
       toast.error("Error al registrar el pago");

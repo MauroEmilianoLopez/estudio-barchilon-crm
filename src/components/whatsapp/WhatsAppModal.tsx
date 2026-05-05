@@ -48,14 +48,14 @@ const TEMPLATES: Array<{ key: TemplateKey; label: string; icon: typeof CreditCar
   { key: "libre", label: "Mensaje personalizado", icon: PenLine },
 ];
 
-interface BuildContext {
+export interface BuildContext {
   contactName: string;
   deal: DealInfo | null;
   paymentAmount?: number;
   completedTaskTitle?: string;
 }
 
-function buildMessage(key: TemplateKey, ctx: BuildContext): string {
+export function buildMessage(key: TemplateKey, ctx: BuildContext): string {
   const { contactName: name, deal, paymentAmount, completedTaskTitle } = ctx;
   const titulo = deal?.title || "[titulo del caso]";
 
@@ -89,7 +89,7 @@ function buildMessage(key: TemplateKey, ctx: BuildContext): string {
   }
 }
 
-function formatHearingDate(d: DealInfo): string | null {
+export function formatHearingDate(d: DealInfo): string | null {
   if (!d.nextHearing) return null;
   try {
     const date = new Date(typeof d.nextHearing === "number" ? (d.nextHearing as number) * 1000 : d.nextHearing);

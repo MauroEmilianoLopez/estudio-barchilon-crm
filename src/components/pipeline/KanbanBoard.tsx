@@ -16,7 +16,8 @@ import { KanbanColumn } from "./KanbanColumn";
 import { DealCard } from "./DealCard";
 import { toast } from "sonner";
 import type { PipelineColumn } from "@/types";
-import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
+import { WhatsAppModal, buildMessage } from "@/components/whatsapp/WhatsAppModal";
+import { tryNotify } from "@/lib/whatsappNotify";
 
 const WON_STAGE_NAME = "Etapa final";
 
@@ -133,11 +134,17 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
           movedDeal?.contactPhone &&
           movedDeal.contactName
         ) {
-          setWonNotification({
-            contactName: movedDeal.contactName,
-            contactPhone: movedDeal.contactPhone,
-            dealTitle: movedDeal.title,
+          const contactName = movedDeal.contactName;
+          const contactPhone = movedDeal.contactPhone;
+          const dealTitle = movedDeal.title;
+          const message = buildMessage("resolucion_favorable", {
+            contactName,
+            deal: { title: dealTitle, agreedFees: null, paidAmount: 0, nextHearing: null },
           });
+          const sent = await tryNotify({ phone: contactPhone, message, contactName });
+          if (!sent) {
+            setWonNotification({ contactName, contactPhone, dealTitle });
+          }
         }
       } catch {
         // Rollback to pre-drag state

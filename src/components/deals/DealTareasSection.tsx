@@ -10,7 +10,8 @@ import { Plus, Check } from "lucide-react";
 import { formatDate } from "@/lib/constants";
 import { formatBusinessDaysLabel, businessDaysBetween } from "@/lib/businessDays";
 import { toast } from "sonner";
-import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
+import { WhatsAppModal, buildMessage } from "@/components/whatsapp/WhatsAppModal";
+import { tryNotify } from "@/lib/whatsappNotify";
 
 interface Tarea {
   id: string;
@@ -100,7 +101,13 @@ export function DealTareasSection({ dealId, dealTitle, contactName, contactPhone
       fetchTareas();
       if (contactPhone) {
         setCompletedTaskTitle(tareaTitulo);
-        setWhatsappOpen(true);
+        const message = buildMessage("tarea_realizada", {
+          contactName,
+          deal: { title: dealTitle, agreedFees: null, paidAmount: 0, nextHearing: null },
+          completedTaskTitle: tareaTitulo,
+        });
+        const sent = await tryNotify({ phone: contactPhone, message, contactName });
+        if (!sent) setWhatsappOpen(true);
       }
     } else {
       toast.error("Error al completar tarea");
