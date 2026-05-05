@@ -4,6 +4,7 @@ import {
   KPISectionAsync,
   PerentorioBannerAsync,
   TodayAsync,
+  ProspectoStaleAsync,
   OtherPendingAsync,
   PipelineSectionAsync,
   RecentActivityAsync,
@@ -62,6 +63,10 @@ export default function DashboardPage() {
 
       <Suspense fallback={<TodaySkeleton />}>
         <TodayAsync />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <ProspectoStaleAsync />
       </Suspense>
 
       <Suspense fallback={<Skeleton height={120} />}>

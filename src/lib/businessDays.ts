@@ -2,6 +2,19 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
+export function addBusinessDays(from: Date, n: number): Date {
+  const cursor = new Date(from);
+  if (n === 0) return cursor;
+  const sign = n > 0 ? 1 : -1;
+  let remaining = Math.abs(n);
+  while (remaining > 0) {
+    cursor.setDate(cursor.getDate() + sign);
+    const dow = cursor.getDay();
+    if (dow !== 0 && dow !== 6) remaining--;
+  }
+  return cursor;
+}
+
 export function businessDaysBetween(from: Date, to: Date): number {
   const a = startOfDay(from);
   const b = startOfDay(to);

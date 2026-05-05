@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { deals, contacts, pipelineStages } from "@/db/schema";
+import { deals, contacts, pipelineStages, tareas } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { addBusinessDays } from "@/lib/businessDays";
 
 export async function GET() {
   const results = await db
@@ -94,6 +95,31 @@ export async function POST(request: NextRequest) {
         updatedAt: now,
       })
       .returning();
+
+    try {
+      const [stage] = await db
+        .select({ name: pipelineStages.name })
+        .from(pipelineStages)
+        .where(eq(pipelineStages.id, finalStageId));
+      if (stage?.name === "Prospecto") {
+        const [contact] = await db
+          .select({ name: contacts.name })
+          .from(contacts)
+          .where(eq(contacts.id, contactId));
+        const contactName = contact?.name || "cliente";
+        await db.insert(tareas).values({
+          dealId: result.id,
+          contactId,
+          tipo: "tarea_procuracion",
+          titulo: `Seguimiento con ${contactName}`,
+          descripcion: "Cliente en etapa Prospecto sin contacto reciente",
+          fecha: addBusinessDays(now, 5),
+          completada: false,
+        });
+      }
+    } catch (e) {
+      console.error("Failed to auto-create Prospecto follow-up tarea:", e);
+    }
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

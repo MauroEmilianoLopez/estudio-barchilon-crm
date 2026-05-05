@@ -36,6 +36,13 @@ interface OverduePaymentItem {
   pending: number;
 }
 
+interface ProspectoStaleItem {
+  dealId: string;
+  dealTitle: string;
+  contactName: string | null;
+  days: number;
+}
+
 interface TodaySectionProps {
   vencimientosHoy: VencimientoHoy[];
   tareasHoy: TareaHoy[];
@@ -94,6 +101,44 @@ function VencimientosHoyCard({ items }: { items: VencimientoHoy[] }) {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+export function ProspectoStaleSection({ items }: { items: ProspectoStaleItem[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <h2 className="text-lg font-semibold mb-3">Hoy</h2>
+      <Card style={{ background: "#fffbeb", borderColor: "#fde68a", borderWidth: 1, borderTopWidth: 4, borderTopColor: "#f59e0b" }}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2" style={{ color: "#92400e" }}>
+            <span>⚠️</span>
+            Prospectos sin contacto
+            <span className="ml-auto text-sm font-bold rounded-full px-2 py-0.5 text-white" style={{ background: "#f59e0b" }}>
+              {items.length}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {items.map((p) => (
+              <Link
+                key={p.dealId}
+                href={`/deals/${p.dealId}`}
+                className="block p-3 rounded-lg bg-white border transition-colors hover:bg-amber-50"
+                style={{ borderColor: "#fde68a", minHeight: 52 }}
+              >
+                <p className="text-sm font-semibold" style={{ color: "#1f2937" }}>
+                  {p.contactName || "Sin cliente"} lleva {p.days} {p.days === 1 ? "día hábil" : "días hábiles"} sin contacto
+                </p>
+                <p className="text-xs text-muted-foreground truncate">{p.dealTitle}</p>
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

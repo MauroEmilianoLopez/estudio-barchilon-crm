@@ -4,7 +4,8 @@ import { eq, asc, desc, gte, sql, and, lte } from "drizzle-orm";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { PipelineChart } from "@/components/dashboard/PipelineChart";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { TodaySection, OtherPendingSection } from "@/components/dashboard/TodaySection";
+import { TodaySection, OtherPendingSection, ProspectoStaleSection } from "@/components/dashboard/TodaySection";
+import { businessDaysBetween } from "@/lib/businessDays";
 import type { DashboardStats } from "@/types";
 
 export async function KPISectionAsync() {
@@ -168,6 +169,68 @@ export async function TodayAsync() {
   ]);
 
   return <TodaySection vencimientosHoy={vencimientosHoy} tareasHoy={tareasHoy} />;
+}
+
+export async function ProspectoStaleAsync() {
+  const [prospectoStage] = await db
+    .select({ id: pipelineStages.id })
+    .from(pipelineStages)
+    .where(eq(pipelineStages.name, "Prospecto"));
+
+  if (!prospectoStage) return null;
+
+  const prospectoDeals = await db
+    .select({
+      dealId: deals.id,
+      dealTitle: deals.title,
+      contactId: deals.contactId,
+      contactName: contacts.name,
+      createdAt: deals.createdAt,
+    })
+    .from(deals)
+    .leftJoin(contacts, eq(deals.contactId, contacts.id))
+    .where(eq(deals.stageId, prospectoStage.id));
+
+  if (prospectoDeals.length === 0) return null;
+
+  const contactIds = Array.from(new Set(prospectoDeals.map((d) => d.contactId)));
+  const lastByContact = new Map<string, number>();
+  if (contactIds.length > 0) {
+    const acts = await db
+      .select({ contactId: activities.contactId, createdAt: activities.createdAt })
+      .from(activities)
+      .orderBy(desc(activities.createdAt));
+    for (const a of acts) {
+      if (!contactIds.includes(a.contactId)) continue;
+      if (lastByContact.has(a.contactId)) continue;
+      const ts = typeof a.createdAt === "number"
+        ? (a.createdAt < 1e12 ? a.createdAt * 1000 : a.createdAt)
+        : a.createdAt instanceof Date
+          ? a.createdAt.getTime()
+          : 0;
+      lastByContact.set(a.contactId, ts);
+    }
+  }
+
+  const now = new Date();
+  const items = prospectoDeals
+    .map((d) => {
+      const lastTs = lastByContact.get(d.contactId);
+      const fallback = typeof d.createdAt === "number"
+        ? (d.createdAt < 1e12 ? d.createdAt * 1000 : d.createdAt)
+        : d.createdAt instanceof Date
+          ? d.createdAt.getTime()
+          : 0;
+      const refTs = lastTs ?? fallback;
+      const days = businessDaysBetween(new Date(refTs), now);
+      return { dealId: d.dealId, dealTitle: d.dealTitle, contactName: d.contactName, days };
+    })
+    .filter((i) => i.days > 5)
+    .sort((a, b) => b.days - a.days);
+
+  if (items.length === 0) return null;
+
+  return <ProspectoStaleSection items={items} />;
 }
 
 export async function OtherPendingAsync() {
