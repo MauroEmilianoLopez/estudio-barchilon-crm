@@ -102,9 +102,9 @@ export function DealCard({
 
   const fees = agreedFees || 0;
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    router.push(`/deals/${id}?edit=1`);
+  const handleClick = () => {
+    if (isDragging) return;
+    router.push(`/deals/${id}`);
   };
 
   return (
@@ -113,9 +113,11 @@ export function DealCard({
       style={style}
       {...attributes}
       {...listeners}
-      onDoubleClick={handleDoubleClick}
-      title="Doble click para editar"
-      className="p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+      onClick={handleClick}
+      title="Click para ver el caso"
+      className={`p-3 hover:shadow-md transition-shadow ${
+        isDragging ? "cursor-grabbing" : "cursor-pointer"
+      }`}
     >
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-1">
