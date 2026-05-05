@@ -12,7 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Plus, CheckCircle2, AlertCircle } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/constants";
 import { PaymentForm } from "./PaymentForm";
 
@@ -35,9 +35,12 @@ interface Payment {
 interface PaymentsListProps {
   dealId: string;
   agreedFees: number | null;
+  dealTitle: string;
+  contactName: string;
+  contactPhone: string | null;
 }
 
-export function PaymentsList({ dealId, agreedFees }: PaymentsListProps) {
+export function PaymentsList({ dealId, agreedFees, dealTitle, contactName, contactPhone }: PaymentsListProps) {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -102,6 +105,20 @@ export function PaymentsList({ dealId, agreedFees }: PaymentsListProps) {
               />
             </div>
             <p className="text-xs text-muted-foreground text-center">{percent}% cobrado</p>
+
+            {remaining <= 0 ? (
+              <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-green-50 border border-green-200">
+                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                <p className="text-base font-bold text-green-700">Pagado completo</p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+                <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+                <p className="text-base font-bold text-red-700">
+                  Saldo pendiente: {formatCurrency(remaining)}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -164,7 +181,14 @@ export function PaymentsList({ dealId, agreedFees }: PaymentsListProps) {
         )}
       </CardContent>
 
-      <PaymentForm open={showForm} onClose={handleClose} dealId={dealId} />
+      <PaymentForm
+        open={showForm}
+        onClose={handleClose}
+        dealId={dealId}
+        dealTitle={dealTitle}
+        contactName={contactName}
+        contactPhone={contactPhone}
+      />
     </Card>
   );
 }

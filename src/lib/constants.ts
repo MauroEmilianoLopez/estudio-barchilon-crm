@@ -51,6 +51,19 @@ export function cleanPhoneForWhatsApp(phone: string): string {
   return phone.replace(/[\s\-\(\)]/g, "").replace(/^\+/, "");
 }
 
+function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+export function buildWhatsAppUrl(phone: string, message: string): string {
+  const clean = cleanPhoneForWhatsApp(phone);
+  const text = encodeURIComponent(message);
+  return isMobileDevice()
+    ? `https://wa.me/${clean}?text=${text}`
+    : `https://web.whatsapp.com/send?phone=${clean}&text=${text}`;
+}
+
 function toDate(date: Date | number): Date {
   if (date instanceof Date) return date;
   // If number is less than 1e12, it's in seconds; otherwise milliseconds

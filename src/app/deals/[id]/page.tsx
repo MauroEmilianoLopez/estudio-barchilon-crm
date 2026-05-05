@@ -6,53 +6,15 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, DollarSign, FileText, Gavel, Scale, CheckCircle, AlertTriangle, XCircle, Hash, Landmark, AlertOctagon } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, FileText, Gavel, Scale, Hash, Landmark, AlertOctagon } from "lucide-react";
 import { formatCurrency, formatDate, formatRelativeDate } from "@/lib/constants";
 import { ACTIVITY_TYPE_CONFIG, CASE_TYPE_LABELS } from "@/lib/constants";
 import { PaymentsList } from "@/components/payments/PaymentsList";
 import { WhatsAppButton } from "@/components/whatsapp/WhatsAppButton";
 import { DealTareasSection } from "@/components/deals/DealTareasSection";
+import { EditDealButton } from "@/components/deals/EditDealButton";
 
 export const dynamic = "force-dynamic";
-
-function PaymentStatus({ agreedFees, paidAmount }: { agreedFees: number | null; paidAmount: number }) {
-  if (!agreedFees || agreedFees === 0) return null;
-
-  if (paidAmount >= agreedFees) {
-    return (
-      <div className="flex items-center gap-2">
-        <CheckCircle className="h-5 w-5 text-green-600" />
-        <div>
-          <p className="text-lg font-bold text-green-600">Cancelado</p>
-          <p className="text-xs text-muted-foreground">Honorarios abonados en su totalidad</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (paidAmount > 0) {
-    const percent = Math.round((paidAmount / agreedFees) * 100);
-    return (
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="h-5 w-5 text-yellow-600" />
-        <div>
-          <p className="text-lg font-bold text-yellow-600">Pago parcial</p>
-          <p className="text-xs text-muted-foreground">{percent}% abonado — Resta {formatCurrency(agreedFees - paidAmount)}</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <XCircle className="h-5 w-5 text-red-600" />
-      <div>
-        <p className="text-lg font-bold text-red-600">Sin pago</p>
-        <p className="text-xs text-muted-foreground">Pendiente: {formatCurrency(agreedFees)}</p>
-      </div>
-    </div>
-  );
-}
 
 export default async function DealDetailPage({
   params,
@@ -109,18 +71,21 @@ export default async function DealDetailPage({
             </Link>
           )}
         </div>
-        {contact?.phone && (
-          <WhatsAppButton
-            contactName={contact.name}
-            contactPhone={contact.phone}
-            deals={[{
-              title: deal.title,
-              agreedFees: deal.agreedFees,
-              paidAmount: deal.paidAmount,
-              nextHearing: deal.nextHearing ? String(deal.nextHearing) : null,
-            }]}
-          />
-        )}
+        <div className="flex items-center gap-2">
+          <EditDealButton dealId={id} />
+          {contact?.phone && (
+            <WhatsAppButton
+              contactName={contact.name}
+              contactPhone={contact.phone}
+              deals={[{
+                title: deal.title,
+                agreedFees: deal.agreedFees,
+                paidAmount: deal.paidAmount,
+                nextHearing: deal.nextHearing ? String(deal.nextHearing) : null,
+              }]}
+            />
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -217,10 +182,21 @@ export default async function DealDetailPage({
         </Card>
       )}
 
-      <DealTareasSection dealId={id} />
+      <DealTareasSection
+        dealId={id}
+        dealTitle={deal.title}
+        contactName={contact?.name ?? ""}
+        contactPhone={contact?.phone ?? null}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PaymentsList dealId={id} agreedFees={deal.agreedFees} />
+        <PaymentsList
+          dealId={id}
+          agreedFees={deal.agreedFees}
+          dealTitle={deal.title}
+          contactName={contact?.name ?? ""}
+          contactPhone={contact?.phone ?? null}
+        />
         {deal.notes && (
           <Card>
             <CardHeader>

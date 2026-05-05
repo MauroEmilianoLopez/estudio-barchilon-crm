@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
 
 const dealSchema = z.object({
   title: z.string().min(1, "El titulo es requerido"),
@@ -47,19 +48,41 @@ type DealFormData = z.infer<typeof dealSchema>;
 interface DealFormProps {
   open: boolean;
   onClose: () => void;
+  dealId?: string;
 }
 
-export function DealForm({ open, onClose }: DealFormProps) {
-  const router = useRouter();
-  const [contactsList, setContacts] = useState<Array<{ id: string; name: string }>>([]);
-  const [stagesList, setStages] = useState<Array<{ id: string; name: string }>>([]);
+interface ContactOption {
+  id: string;
+  name: string;
+  phone: string | null;
+}
 
-  useEffect(() => {
-    if (open) {
-      fetch("/api/contacts").then((r) => r.json()).then(setContacts);
-      fetch("/api/pipeline").then((r) => r.json()).then(setStages);
-    }
-  }, [open]);
+function toDateInput(v: string | number | Date | null | undefined): string {
+  if (!v) return "";
+  const d = v instanceof Date ? v : new Date(v);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().split("T")[0];
+}
+
+function centsToDecimalString(cents: number | null | undefined): string {
+  if (cents == null) return "";
+  return (cents / 100).toString();
+}
+
+export function DealForm({ open, onClose, dealId }: DealFormProps) {
+  const router = useRouter();
+  const isEdit = !!dealId;
+  const [contactsList, setContacts] = useState<ContactOption[]>([]);
+  const [stagesList, setStages] = useState<Array<{ id: string; name: string }>>([]);
+  const [loading, setLoading] = useState(false);
+  const [previousHearing, setPreviousHearing] = useState<string>("");
+  const [whatsappOpen, setWhatsappOpen] = useState(false);
+  const [pendingNotification, setPendingNotification] = useState<{
+    contactName: string;
+    contactPhone: string;
+    dealTitle: string;
+    nextHearing: string;
+  } | null>(null);
 
   const {
     register,
@@ -88,13 +111,53 @@ export function DealForm({ open, onClose }: DealFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (!open) return;
+
+    fetch("/api/contacts").then((r) => r.json()).then(setContacts);
+    fetch("/api/pipeline").then((r) => r.json()).then(setStages);
+
+    if (isEdit && dealId) {
+      setLoading(true);
+      fetch(`/api/deals/${dealId}`)
+        .then((r) => r.json())
+        .then((deal) => {
+          const hearing = toDateInput(deal.nextHearing);
+          reset({
+            title: deal.title || "",
+            contactId: deal.contactId || "",
+            stageId: deal.stageId || "",
+            expectedClose: toDateInput(deal.expectedClose),
+            notes: deal.notes || "",
+            agreedFees: centsToDecimalString(deal.agreedFees),
+            paidAmount: centsToDecimalString(deal.paidAmount),
+            nextHearing: hearing,
+            esPerentorio: deal.esPerentorio === true,
+            caseType: deal.caseType || "",
+            caseNumber: deal.caseNumber || "",
+            court: deal.court || "",
+            caseStartDate: toDateInput(deal.caseStartDate),
+            internalNotes: deal.internalNotes || "",
+          });
+          setPreviousHearing(hearing);
+        })
+        .finally(() => setLoading(false));
+    } else {
+      reset();
+      setPreviousHearing("");
+    }
+  }, [open, isEdit, dealId, reset]);
+
   const onSubmit = async (data: DealFormData) => {
     try {
       const agreedFees = data.agreedFees ? parseFloat(data.agreedFees) : null;
       const paidAmount = data.paidAmount ? parseFloat(data.paidAmount) : 0;
 
-      const res = await fetch("/api/deals", {
-        method: "POST",
+      const url = isEdit ? `/api/deals/${dealId}` : "/api/deals";
+      const method = isEdit ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
@@ -112,24 +175,46 @@ export function DealForm({ open, onClose }: DealFormProps) {
         }),
       });
 
-      if (!res.ok) throw new Error("Error al crear caso");
+      if (!res.ok) throw new Error(isEdit ? "Error al actualizar caso" : "Error al crear caso");
 
-      toast.success("Caso creado exitosamente");
+      toast.success(isEdit ? "Caso actualizado" : "Caso creado exitosamente");
+
+      const hearingChanged = data.nextHearing && data.nextHearing !== previousHearing;
+      const contact = contactsList.find((c) => c.id === data.contactId);
+
+      if (hearingChanged && contact?.phone) {
+        setPendingNotification({
+          contactName: contact.name,
+          contactPhone: contact.phone,
+          dealTitle: data.title,
+          nextHearing: data.nextHearing,
+        });
+        setWhatsappOpen(true);
+      }
+
       reset();
       onClose();
       router.refresh();
     } catch {
-      toast.error("Error al crear el caso");
+      toast.error(isEdit ? "Error al actualizar el caso" : "Error al crear el caso");
     }
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nuevo Caso</DialogTitle>
+          <DialogTitle>{isEdit ? "Editar Caso" : "Nuevo Caso"}</DialogTitle>
         </DialogHeader>
 
+        {loading ? (
+          <div className="space-y-3 py-6">
+            <div className="h-9 bg-muted rounded animate-pulse" />
+            <div className="h-9 bg-muted rounded animate-pulse" />
+            <div className="h-9 bg-muted rounded animate-pulse" />
+          </div>
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="deal-title">Titulo del caso *</Label>
@@ -289,11 +374,31 @@ export function DealForm({ open, onClose }: DealFormProps) {
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting} className="cursor-pointer">
-              {isSubmitting ? "Creando..." : "Crear Caso"}
+              {isSubmitting ? "Guardando..." : isEdit ? "Guardar cambios" : "Crear Caso"}
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
+    {pendingNotification && (
+      <WhatsAppModal
+        open={whatsappOpen}
+        onClose={() => {
+          setWhatsappOpen(false);
+          setPendingNotification(null);
+        }}
+        contactName={pendingNotification.contactName}
+        contactPhone={pendingNotification.contactPhone}
+        deals={[{
+          title: pendingNotification.dealTitle,
+          agreedFees: null,
+          paidAmount: 0,
+          nextHearing: pendingNotification.nextHearing,
+        }]}
+        defaultTemplate="audiencia"
+      />
+    )}
+    </>
   );
 }

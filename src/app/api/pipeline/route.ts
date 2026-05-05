@@ -23,6 +23,7 @@ export async function GET() {
       updatedAt: deals.updatedAt,
       contactName: contacts.name,
       contactTemperature: contacts.temperature,
+      contactPhone: contacts.phone,
     })
     .from(deals)
     .leftJoin(contacts, eq(deals.contactId, contacts.id));

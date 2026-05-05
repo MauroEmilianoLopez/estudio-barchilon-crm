@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
 
 const paymentSchema = z.object({
   date: z.string().min(1, "La fecha es requerida"),
@@ -36,10 +38,15 @@ interface PaymentFormProps {
   open: boolean;
   onClose: () => void;
   dealId: string;
+  dealTitle: string;
+  contactName: string;
+  contactPhone: string | null;
 }
 
-export function PaymentForm({ open, onClose, dealId }: PaymentFormProps) {
+export function PaymentForm({ open, onClose, dealId, dealTitle, contactName, contactPhone }: PaymentFormProps) {
   const router = useRouter();
+  const [whatsappOpen, setWhatsappOpen] = useState(false);
+  const [lastPaymentAmount, setLastPaymentAmount] = useState(0);
 
   const {
     register,
@@ -82,12 +89,18 @@ export function PaymentForm({ open, onClose, dealId }: PaymentFormProps) {
       reset();
       onClose();
       router.refresh();
+
+      if (contactPhone) {
+        setLastPaymentAmount(amountCents);
+        setWhatsappOpen(true);
+      }
     } catch {
       toast.error("Error al registrar el pago");
     }
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -174,5 +187,17 @@ export function PaymentForm({ open, onClose, dealId }: PaymentFormProps) {
         </form>
       </DialogContent>
     </Dialog>
+    {contactPhone && (
+      <WhatsAppModal
+        open={whatsappOpen}
+        onClose={() => setWhatsappOpen(false)}
+        contactName={contactName}
+        contactPhone={contactPhone}
+        deals={[{ title: dealTitle, agreedFees: null, paidAmount: 0, nextHearing: null }]}
+        defaultTemplate="confirmacion_pago"
+        paymentAmount={lastPaymentAmount}
+      />
+    )}
+    </>
   );
 }

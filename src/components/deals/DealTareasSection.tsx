@@ -10,6 +10,7 @@ import { Plus, Check } from "lucide-react";
 import { formatDate } from "@/lib/constants";
 import { formatBusinessDaysLabel, businessDaysBetween } from "@/lib/businessDays";
 import { toast } from "sonner";
+import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
 
 interface Tarea {
   id: string;
@@ -26,7 +27,14 @@ function toDate(v: number | string | Date): Date {
   return new Date(v);
 }
 
-export function DealTareasSection({ dealId }: { dealId: string }) {
+interface DealTareasSectionProps {
+  dealId: string;
+  dealTitle: string;
+  contactName: string;
+  contactPhone: string | null;
+}
+
+export function DealTareasSection({ dealId, dealTitle, contactName, contactPhone }: DealTareasSectionProps) {
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -34,6 +42,8 @@ export function DealTareasSection({ dealId }: { dealId: string }) {
   const [descripcion, setDescripcion] = useState("");
   const [fecha, setFecha] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [whatsappOpen, setWhatsappOpen] = useState(false);
+  const [completedTaskTitle, setCompletedTaskTitle] = useState("");
 
   const fetchTareas = useCallback(async () => {
     const res = await fetch(`/api/tareas?dealId=${dealId}&completada=false`);
@@ -79,7 +89,7 @@ export function DealTareasSection({ dealId }: { dealId: string }) {
     }
   };
 
-  const handleComplete = async (id: string) => {
+  const handleComplete = async (id: string, tareaTitulo: string) => {
     const res = await fetch(`/api/tareas/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -88,6 +98,10 @@ export function DealTareasSection({ dealId }: { dealId: string }) {
     if (res.ok) {
       toast.success("Tarea completada");
       fetchTareas();
+      if (contactPhone) {
+        setCompletedTaskTitle(tareaTitulo);
+        setWhatsappOpen(true);
+      }
     } else {
       toast.error("Error al completar tarea");
     }
@@ -179,7 +193,7 @@ export function DealTareasSection({ dealId }: { dealId: string }) {
                   style={{ borderColor: "#bfdbfe" }}
                 >
                   <button
-                    onClick={() => handleComplete(t.id)}
+                    onClick={() => handleComplete(t.id, t.titulo)}
                     className="shrink-0 mt-0.5 h-7 w-7 rounded-full border flex items-center justify-center cursor-pointer hover:bg-green-50"
                     style={{ borderColor: "#bfdbfe" }}
                     title="Completar tarea"
@@ -201,6 +215,17 @@ export function DealTareasSection({ dealId }: { dealId: string }) {
           </div>
         )}
       </CardContent>
+      {contactPhone && (
+        <WhatsAppModal
+          open={whatsappOpen}
+          onClose={() => setWhatsappOpen(false)}
+          contactName={contactName}
+          contactPhone={contactPhone}
+          deals={[{ title: dealTitle, agreedFees: null, paidAmount: 0, nextHearing: null }]}
+          defaultTemplate="tarea_realizada"
+          completedTaskTitle={completedTaskTitle}
+        />
+      )}
     </Card>
   );
 }

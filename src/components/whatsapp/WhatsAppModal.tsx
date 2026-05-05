@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -9,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MessageCircle, Send, CreditCard, Gavel, FileText, CheckCircle, PenLine } from "lucide-react";
-import { cleanPhoneForWhatsApp, formatCurrency } from "@/lib/constants";
+import { MessageCircle, Send, CreditCard, Gavel, FileText, CheckCircle, PenLine, Briefcase, Trophy } from "lucide-react";
+import { buildWhatsAppUrl, formatCurrency } from "@/lib/constants";
 
 interface DealInfo {
   title: string;
@@ -19,15 +19,26 @@ interface DealInfo {
   nextHearing: string | null;
 }
 
+export type TemplateKey =
+  | "pago"
+  | "audiencia"
+  | "documentos"
+  | "confirmacion"
+  | "confirmacion_pago"
+  | "tarea_realizada"
+  | "resolucion_favorable"
+  | "libre";
+
 interface WhatsAppModalProps {
   open: boolean;
   onClose: () => void;
   contactName: string;
   contactPhone: string;
   deals?: DealInfo[];
+  defaultTemplate?: TemplateKey;
+  paymentAmount?: number; // in cents — for confirmacion_pago
+  completedTaskTitle?: string; // for tarea_realizada
 }
-
-type TemplateKey = "pago" | "audiencia" | "documentos" | "confirmacion" | "libre";
 
 const TEMPLATES: Array<{ key: TemplateKey; label: string; icon: typeof CreditCard }> = [
   { key: "pago", label: "Recordatorio de pago", icon: CreditCard },
@@ -37,11 +48,15 @@ const TEMPLATES: Array<{ key: TemplateKey; label: string; icon: typeof CreditCar
   { key: "libre", label: "Mensaje personalizado", icon: PenLine },
 ];
 
-function buildMessage(
-  key: TemplateKey,
-  name: string,
-  deal: DealInfo | null
-): string {
+interface BuildContext {
+  contactName: string;
+  deal: DealInfo | null;
+  paymentAmount?: number;
+  completedTaskTitle?: string;
+}
+
+function buildMessage(key: TemplateKey, ctx: BuildContext): string {
+  const { contactName: name, deal, paymentAmount, completedTaskTitle } = ctx;
   const titulo = deal?.title || "[titulo del caso]";
 
   switch (key) {
@@ -59,6 +74,16 @@ function buildMessage(
       return `Hola ${name}, para poder avanzar con tu caso ${titulo} necesito que me hagas llegar la siguiente documentacion: [completar documentacion requerida]. Quedamos en contacto. Saludos, Abril Barchilon.`;
     case "confirmacion":
       return `Hola ${name}, confirmamos la recepcion de tu pago. Muchas gracias. Ante cualquier consulta no dudes en contactarme. Saludos, Abril Barchilon.`;
+    case "confirmacion_pago": {
+      const monto = paymentAmount != null ? formatCurrency(paymentAmount) : "$[monto]";
+      return `Hola ${name}, confirmamos la recepcion de tu pago de ${monto} correspondiente al caso ${titulo}. Muchas gracias. Ante cualquier consulta estoy a tu disposicion. Saludos, Abril Barchilon.`;
+    }
+    case "tarea_realizada": {
+      const tarea = completedTaskTitle || "[tarea]";
+      return `Hola ${name}, te informo que ya realice la tarea "${tarea}" correspondiente a tu caso ${titulo}. Quedamos en contacto. Saludos, Abril Barchilon.`;
+    }
+    case "resolucion_favorable":
+      return `Hola ${name}, excelentes noticias: hemos obtenido una resolucion favorable en tu caso ${titulo}. Coordinemos una reunion para repasar los proximos pasos. Saludos, Abril Barchilon.`;
     case "libre":
       return `Hola ${name}, `;
   }
@@ -74,7 +99,23 @@ function formatHearingDate(d: DealInfo): string | null {
   }
 }
 
-export function WhatsAppModal({ open, onClose, contactName, contactPhone, deals }: WhatsAppModalProps) {
+const TITLE_BY_TEMPLATE: Partial<Record<TemplateKey, { icon: typeof CreditCard; label: string }>> = {
+  confirmacion_pago: { icon: CheckCircle, label: "Confirmar pago al cliente" },
+  tarea_realizada: { icon: Briefcase, label: "Avisar tarea realizada" },
+  resolucion_favorable: { icon: Trophy, label: "Avisar resolucion favorable" },
+  audiencia: { icon: Gavel, label: "Avisar fecha de actuacion" },
+};
+
+export function WhatsAppModal({
+  open,
+  onClose,
+  contactName,
+  contactPhone,
+  deals,
+  defaultTemplate,
+  paymentAmount,
+  completedTaskTitle,
+}: WhatsAppModalProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey | null>(null);
   const [selectedDealIdx, setSelectedDealIdx] = useState(0);
   const [message, setMessage] = useState("");
@@ -84,9 +125,31 @@ export function WhatsAppModal({ open, onClose, contactName, contactPhone, deals 
     ? { ...currentDeal, nextHearing: formatHearingDate(currentDeal) }
     : null;
 
+  useEffect(() => {
+    if (open && defaultTemplate) {
+      setSelectedTemplate(defaultTemplate);
+      setMessage(
+        buildMessage(defaultTemplate, {
+          contactName,
+          deal: dealWithFormattedDate,
+          paymentAmount,
+          completedTaskTitle,
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultTemplate]);
+
   const handleSelectTemplate = (key: TemplateKey) => {
     setSelectedTemplate(key);
-    setMessage(buildMessage(key, contactName, dealWithFormattedDate));
+    setMessage(
+      buildMessage(key, {
+        contactName,
+        deal: dealWithFormattedDate,
+        paymentAmount,
+        completedTaskTitle,
+      })
+    );
   };
 
   const handleSelectDeal = (idx: number) => {
@@ -94,13 +157,19 @@ export function WhatsAppModal({ open, onClose, contactName, contactPhone, deals 
     if (selectedTemplate) {
       const d = deals![idx];
       const dFormatted = { ...d, nextHearing: formatHearingDate(d) };
-      setMessage(buildMessage(selectedTemplate, contactName, dFormatted));
+      setMessage(
+        buildMessage(selectedTemplate, {
+          contactName,
+          deal: dFormatted,
+          paymentAmount,
+          completedTaskTitle,
+        })
+      );
     }
   };
 
   const handleSend = () => {
-    const phone = cleanPhoneForWhatsApp(contactPhone);
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    const url = buildWhatsAppUrl(contactPhone, message);
     window.open(url, "_blank");
     onClose();
     setSelectedTemplate(null);
@@ -113,13 +182,17 @@ export function WhatsAppModal({ open, onClose, contactName, contactPhone, deals 
     setMessage("");
   };
 
+  const titleConfig = selectedTemplate ? TITLE_BY_TEMPLATE[selectedTemplate] : undefined;
+  const TitleIcon = titleConfig?.icon ?? MessageCircle;
+  const titleLabel = titleConfig?.label ?? `Enviar WhatsApp a ${contactName}`;
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-green-600" />
-            Enviar WhatsApp a {contactName}
+            <TitleIcon className="h-5 w-5 text-green-600" />
+            {titleLabel}
           </DialogTitle>
         </DialogHeader>
 
@@ -141,6 +214,13 @@ export function WhatsAppModal({ open, onClose, contactName, contactPhone, deals 
           </div>
         ) : (
           <div className="space-y-4">
+            {titleConfig && (
+              <p className="text-xs text-muted-foreground">
+                Para <span className="font-medium text-foreground">{contactName}</span>
+                {currentDeal && <> · Caso <span className="font-medium text-foreground">{currentDeal.title}</span></>}
+              </p>
+            )}
+
             {deals && deals.length > 1 && (
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">Caso asociado:</p>
@@ -165,12 +245,14 @@ export function WhatsAppModal({ open, onClose, contactName, contactPhone, deals 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-medium text-muted-foreground">Mensaje:</p>
-                <button
-                  onClick={() => setSelectedTemplate(null)}
-                  className="text-xs text-primary hover:underline cursor-pointer"
-                >
-                  Cambiar plantilla
-                </button>
+                {!defaultTemplate && (
+                  <button
+                    onClick={() => setSelectedTemplate(null)}
+                    className="text-xs text-primary hover:underline cursor-pointer"
+                  >
+                    Cambiar plantilla
+                  </button>
+                )}
               </div>
               <Textarea
                 value={message}

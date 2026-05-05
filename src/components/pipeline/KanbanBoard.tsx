@@ -16,6 +16,15 @@ import { KanbanColumn } from "./KanbanColumn";
 import { DealCard } from "./DealCard";
 import { toast } from "sonner";
 import type { PipelineColumn } from "@/types";
+import { WhatsAppModal } from "@/components/whatsapp/WhatsAppModal";
+
+const WON_STAGE_NAME = "Cerrado ganado";
+
+interface WonNotification {
+  contactName: string;
+  contactPhone: string;
+  dealTitle: string;
+}
 
 interface KanbanBoardProps {
   initialColumns: PipelineColumn[];
@@ -25,6 +34,7 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
   const [columns, setColumns] = useState(initialColumns);
   const [activeId, setActiveId] = useState<string | null>(null);
   const columnsSnapshot = useRef<PipelineColumn[]>(initialColumns);
+  const [wonNotification, setWonNotification] = useState<WonNotification | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -97,6 +107,12 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
 
       if (!overColumn) return;
 
+      const sourceColumn = columnsSnapshot.current.find((c) =>
+        c.deals.some((d) => d.id === activeId)
+      );
+      const isStageChange = sourceColumn?.id !== overColumn.id;
+      const movedDeal = overColumn.deals.find((d) => d.id === activeId);
+
       // Update the deal's stage via API
       try {
         const res = await fetch("/api/pipeline", {
@@ -110,6 +126,19 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
         if (!res.ok) {
           throw new Error("API error");
         }
+
+        if (
+          isStageChange &&
+          overColumn.name === WON_STAGE_NAME &&
+          movedDeal?.contactPhone &&
+          movedDeal.contactName
+        ) {
+          setWonNotification({
+            contactName: movedDeal.contactName,
+            contactPhone: movedDeal.contactPhone,
+            dealTitle: movedDeal.title,
+          });
+        }
       } catch {
         // Rollback to pre-drag state
         setColumns(columnsSnapshot.current);
@@ -120,6 +149,7 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
   );
 
   return (
+    <>
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
@@ -173,5 +203,16 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
         ) : null}
       </DragOverlay>
     </DndContext>
+    {wonNotification && (
+      <WhatsAppModal
+        open={!!wonNotification}
+        onClose={() => setWonNotification(null)}
+        contactName={wonNotification.contactName}
+        contactPhone={wonNotification.contactPhone}
+        deals={[{ title: wonNotification.dealTitle, agreedFees: null, paidAmount: 0, nextHearing: null }]}
+        defaultTemplate="resolucion_favorable"
+      />
+    )}
+    </>
   );
 }
