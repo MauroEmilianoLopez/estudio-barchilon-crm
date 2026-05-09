@@ -100,18 +100,17 @@ export function DealCard({
 
   const fees = agreedFees || 0;
 
-  const handleClick = () => {
-    window.location.href = `/deals/${id}`;
-  };
-
   return (
+    <a
+      href={`/deals/${id}`}
+      title="Click para ver el caso"
+      className="block no-underline text-inherit"
+    >
     <Card
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      onClick={handleClick}
-      title="Click para ver el caso"
       className={`p-3 hover:shadow-md transition-shadow ${
         isDragging ? "cursor-grabbing" : "cursor-pointer"
       }`}
@@ -147,5 +146,6 @@ export function DealCard({
         <PaymentBadge agreedFees={agreedFees} paidAmount={paidAmount} />
       </div>
     </Card>
+    </a>
   );
 }
