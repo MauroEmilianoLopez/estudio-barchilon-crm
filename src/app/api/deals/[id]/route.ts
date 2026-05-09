@@ -73,6 +73,10 @@ export async function PUT(
     updateData.caseStartDate = body.caseStartDate ? new Date(body.caseStartDate) : null;
   }
   if (body.internalNotes !== undefined) updateData.internalNotes = body.internalNotes;
+  if (body.pipelineType !== undefined) {
+    updateData.pipelineType = body.pipelineType === "administrativo" ? "administrativo" : "judicial";
+  }
+  if (body.organismo !== undefined) updateData.organismo = body.organismo || null;
 
   const [result] = await db
     .update(deals)

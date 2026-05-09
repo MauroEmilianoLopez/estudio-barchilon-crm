@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { pipelineStages, deals, contacts } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const typeParam = searchParams.get("type");
+  const pipelineType = typeParam === "administrativo" ? "administrativo" : "judicial";
+
   const stages = await db
     .select()
     .from(pipelineStages)
+    .where(eq(pipelineStages.pipelineType, pipelineType))
     .orderBy(asc(pipelineStages.order));
 
   const allDeals = await db
@@ -19,6 +24,11 @@ export async function GET() {
       expectedClose: deals.expectedClose,
       probability: deals.probability,
       notes: deals.notes,
+      agreedFees: deals.agreedFees,
+      paidAmount: deals.paidAmount,
+      caseType: deals.caseType,
+      pipelineType: deals.pipelineType,
+      organismo: deals.organismo,
       createdAt: deals.createdAt,
       updatedAt: deals.updatedAt,
       contactName: contacts.name,
@@ -26,7 +36,8 @@ export async function GET() {
       contactPhone: contacts.phone,
     })
     .from(deals)
-    .leftJoin(contacts, eq(deals.contactId, contacts.id));
+    .leftJoin(contacts, eq(deals.contactId, contacts.id))
+    .where(eq(deals.pipelineType, pipelineType));
 
   const pipeline = stages.map((stage) => ({
     ...stage,

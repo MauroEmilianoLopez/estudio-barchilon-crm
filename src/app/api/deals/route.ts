@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "JSON invalido" }, { status: 400 });
   }
-  const { title, value, stageId, contactId, expectedClose, probability, notes, agreedFees, paidAmount, nextHearing, esPerentorio, caseType, caseNumber, court, caseStartDate, internalNotes } = body;
+  const { title, value, stageId, contactId, expectedClose, probability, notes, agreedFees, paidAmount, nextHearing, esPerentorio, caseType, caseNumber, court, caseStartDate, internalNotes, pipelineType, organismo } = body;
 
   if (!title || !contactId) {
     return NextResponse.json(
@@ -52,12 +52,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Get first stage if none provided
+  const finalPipelineType = pipelineType === "administrativo" ? "administrativo" : "judicial";
+
+  // Get first stage of the right pipeline if none provided
   let finalStageId = stageId;
   if (!finalStageId) {
     const [firstStage] = await db
       .select()
       .from(pipelineStages)
+      .where(eq(pipelineStages.pipelineType, finalPipelineType))
       .orderBy(pipelineStages.order)
       .limit(1);
     finalStageId = firstStage?.id;
@@ -91,6 +94,8 @@ export async function POST(request: NextRequest) {
         court: court || null,
         caseStartDate: caseStartDate ? new Date(caseStartDate) : null,
         internalNotes: internalNotes || null,
+        pipelineType: finalPipelineType,
+        organismo: organismo || null,
         createdAt: now,
         updatedAt: now,
       })

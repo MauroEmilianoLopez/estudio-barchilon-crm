@@ -1,8 +1,8 @@
 import { db } from "@/db";
 import { pipelineStages, deals, contacts } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
-import { KanbanBoard } from "@/components/pipeline/KanbanBoard";
-import type { PipelineColumn } from "@/types";
+import { PipelineTabs } from "@/components/pipeline/PipelineTabs";
+import type { PipelineColumn, PipelineType } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -33,40 +33,51 @@ export default async function PipelinePage() {
       caseNumber: deals.caseNumber,
       court: deals.court,
       caseStartDate: deals.caseStartDate,
+      pipelineType: deals.pipelineType,
+      organismo: deals.organismo,
       contactName: contacts.name,
       contactTemperature: contacts.temperature,
+      contactPhone: contacts.phone,
     })
     .from(deals)
     .leftJoin(contacts, eq(deals.contactId, contacts.id));
 
-  const columns: PipelineColumn[] = stages.map((stage) => ({
-    ...stage,
-    deals: allDeals
-      .filter((d) => d.stageId === stage.id)
-      .map((d) => ({
-        id: d.id,
-        title: d.title,
-        value: d.value,
-        stageId: d.stageId,
-        contactId: d.contactId,
-        expectedClose: d.expectedClose,
-        probability: d.probability,
-        notes: d.notes,
-        agreedFees: d.agreedFees,
-        paidAmount: d.paidAmount,
-        nextHearing: d.nextHearing,
-        esPerentorio: d.esPerentorio,
-        caseType: d.caseType,
-        caseNumber: d.caseNumber,
-        court: d.court,
-        caseStartDate: d.caseStartDate,
-        internalNotes: d.internalNotes,
-        createdAt: d.createdAt,
-        updatedAt: d.updatedAt,
-        contactName: d.contactName,
-        contactTemperature: d.contactTemperature,
-      })) as PipelineColumn["deals"],
-  }));
+  function buildColumns(type: PipelineType): PipelineColumn[] {
+    return stages
+      .filter((s) => s.pipelineType === type)
+      .map((stage) => ({
+        ...stage,
+        pipelineType: stage.pipelineType as PipelineType,
+        deals: allDeals
+          .filter((d) => d.stageId === stage.id && d.pipelineType === type)
+          .map((d) => ({
+            id: d.id,
+            title: d.title,
+            value: d.value,
+            stageId: d.stageId,
+            contactId: d.contactId,
+            expectedClose: d.expectedClose,
+            probability: d.probability,
+            notes: d.notes,
+            agreedFees: d.agreedFees,
+            paidAmount: d.paidAmount,
+            nextHearing: d.nextHearing,
+            esPerentorio: d.esPerentorio,
+            caseType: d.caseType,
+            caseNumber: d.caseNumber,
+            court: d.court,
+            caseStartDate: d.caseStartDate,
+            internalNotes: d.internalNotes,
+            pipelineType: d.pipelineType as PipelineType,
+            organismo: d.organismo,
+            createdAt: d.createdAt,
+            updatedAt: d.updatedAt,
+            contactName: d.contactName,
+            contactTemperature: d.contactTemperature,
+            contactPhone: d.contactPhone,
+          })) as PipelineColumn["deals"],
+      }));
+  }
 
   return (
     <div className="space-y-6">
@@ -77,24 +88,10 @@ export default async function PipelinePage() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-xs">
-        <span className="text-muted-foreground font-medium">Tipo de causa:</span>
-        {[
-          { label: "Civil", color: "#3B82F6" },
-          { label: "Laboral", color: "#F97316" },
-          { label: "Penal", color: "#EF4444" },
-          { label: "Familia", color: "#EC4899" },
-          { label: "Comercial", color: "#10B981" },
-          { label: "Otro", color: "#6B7280" },
-        ].map((t) => (
-          <span key={t.label} className="inline-flex items-center gap-1">
-            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ backgroundColor: t.color }} />
-            {t.label}
-          </span>
-        ))}
-      </div>
-
-      <KanbanBoard initialColumns={columns} />
+      <PipelineTabs
+        judicial={buildColumns("judicial")}
+        administrativo={buildColumns("administrativo")}
+      />
     </div>
   );
 }

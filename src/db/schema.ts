@@ -29,6 +29,7 @@ export const pipelineStages = sqliteTable("pipeline_stages", {
   color: text("color").notNull().default("#64748b"),
   isWon: integer("is_won", { mode: "boolean" }).notNull().default(false),
   isLost: integer("is_lost", { mode: "boolean" }).notNull().default(false),
+  pipelineType: text("pipeline_type").notNull().default("judicial"),
 });
 
 export const deals = sqliteTable("deals", {
@@ -56,6 +57,8 @@ export const deals = sqliteTable("deals", {
   court: text("court"),
   caseStartDate: integer("case_start_date", { mode: "timestamp" }),
   internalNotes: text("internal_notes"),
+  pipelineType: text("pipeline_type").notNull().default("judicial"),
+  organismo: text("organismo"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),

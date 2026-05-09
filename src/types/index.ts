@@ -11,6 +11,8 @@ export type LeadSource =
 
 export type CaseType = "civil" | "laboral" | "familia" | "penal" | "comercial" | "otro";
 
+export type PipelineType = "judicial" | "administrativo";
+
 export type TipoTarea = "vencimiento_judicial" | "tarea_procuracion";
 
 export interface Contact {
@@ -45,6 +47,8 @@ export interface Deal {
   court: string | null;
   caseStartDate: Date | null;
   internalNotes: string | null;
+  pipelineType: PipelineType;
+  organismo: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,6 +60,7 @@ export interface PipelineStage {
   color: string;
   isWon: boolean;
   isLost: boolean;
+  pipelineType: PipelineType;
 }
 
 export interface Activity {

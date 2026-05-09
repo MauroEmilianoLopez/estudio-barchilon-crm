@@ -42,6 +42,8 @@ const dealSchema = z.object({
   court: z.string(),
   caseStartDate: z.string(),
   internalNotes: z.string(),
+  pipelineType: z.enum(["judicial", "administrativo"]),
+  organismo: z.string(),
 });
 
 type DealFormData = z.infer<typeof dealSchema>;
@@ -109,14 +111,17 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
       court: "",
       caseStartDate: "",
       internalNotes: "",
+      pipelineType: "judicial",
+      organismo: "",
     },
   });
+
+  const currentPipelineType = watch("pipelineType");
 
   useEffect(() => {
     if (!open) return;
 
     fetch("/api/contacts").then((r) => r.json()).then(setContacts);
-    fetch("/api/pipeline").then((r) => r.json()).then(setStages);
 
     if (isEdit && dealId) {
       setLoading(true);
@@ -139,6 +144,8 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
             court: deal.court || "",
             caseStartDate: toDateInput(deal.caseStartDate),
             internalNotes: deal.internalNotes || "",
+            pipelineType: deal.pipelineType === "administrativo" ? "administrativo" : "judicial",
+            organismo: deal.organismo || "",
           });
           setPreviousHearing(hearing);
         })
@@ -149,6 +156,13 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
     }
   }, [open, isEdit, dealId, reset]);
 
+  useEffect(() => {
+    if (!open) return;
+    fetch(`/api/pipeline?type=${currentPipelineType}`)
+      .then((r) => r.json())
+      .then(setStages);
+  }, [open, currentPipelineType]);
+
   const onSubmit = async (data: DealFormData) => {
     try {
       const agreedFees = data.agreedFees ? parseFloat(data.agreedFees) : null;
@@ -157,6 +171,7 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
       const url = isEdit ? `/api/deals/${dealId}` : "/api/deals";
       const method = isEdit ? "PUT" : "POST";
 
+      const isAdmin = data.pipelineType === "administrativo";
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -168,11 +183,13 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
           paidAmount,
           nextHearing: data.nextHearing || null,
           esPerentorio: data.esPerentorio,
-          caseType: data.caseType || null,
-          caseNumber: data.caseNumber || null,
-          court: data.court || null,
-          caseStartDate: data.caseStartDate || null,
+          caseType: isAdmin ? null : (data.caseType || null),
+          caseNumber: isAdmin ? null : (data.caseNumber || null),
+          court: isAdmin ? null : (data.court || null),
+          caseStartDate: isAdmin ? null : (data.caseStartDate || null),
           internalNotes: data.internalNotes || null,
+          pipelineType: data.pipelineType,
+          organismo: isAdmin ? (data.organismo || null) : null,
         }),
       });
 
@@ -227,6 +244,49 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
           </div>
         ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Tipo de caso *</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (currentPipelineType !== "judicial") {
+                    setValue("pipelineType", "judicial");
+                    setValue("stageId", "");
+                  }
+                }}
+                className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                  currentPipelineType === "judicial"
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-input bg-background hover:bg-muted/50"
+                }`}
+              >
+                Judicial
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (currentPipelineType !== "administrativo") {
+                    setValue("pipelineType", "administrativo");
+                    setValue("stageId", "");
+                  }
+                }}
+                className={`px-3 py-2 text-sm font-medium rounded-md border transition-colors cursor-pointer ${
+                  currentPipelineType === "administrativo"
+                    ? "bg-amber-50"
+                    : "border-input bg-background hover:bg-muted/50"
+                }`}
+                style={
+                  currentPipelineType === "administrativo"
+                    ? { borderColor: "#f59e0b", color: "#b45309" }
+                    : undefined
+                }
+              >
+                Administrativo
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="deal-title">Titulo del caso *</Label>
             <Input id="deal-title" {...register("title")} placeholder="Ej: Sucesion Garcia Lopez" />
@@ -308,44 +368,54 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
             </div>
           </div>
 
-          <div className="border-t pt-4 mt-2">
-            <p className="text-sm font-medium text-muted-foreground mb-3">Datos del expediente</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Tipo de causa</Label>
-                <Select
-                  value={watch("caseType")}
-                  onValueChange={(v) => v && setValue("caseType", v)}
-                >
-                  <SelectTrigger className="cursor-pointer">
-                    <SelectValue placeholder="Seleccionar..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="civil">Civil</SelectItem>
-                    <SelectItem value="laboral">Laboral</SelectItem>
-                    <SelectItem value="familia">Familia</SelectItem>
-                    <SelectItem value="penal">Penal</SelectItem>
-                    <SelectItem value="comercial">Comercial</SelectItem>
-                    <SelectItem value="otro">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
+          {currentPipelineType === "judicial" ? (
+            <div className="border-t pt-4 mt-2">
+              <p className="text-sm font-medium text-muted-foreground mb-3">Datos del expediente</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Tipo de causa</Label>
+                  <Select
+                    value={watch("caseType")}
+                    onValueChange={(v) => v && setValue("caseType", v)}
+                  >
+                    <SelectTrigger className="cursor-pointer">
+                      <SelectValue placeholder="Seleccionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="civil">Civil</SelectItem>
+                      <SelectItem value="laboral">Laboral</SelectItem>
+                      <SelectItem value="familia">Familia</SelectItem>
+                      <SelectItem value="penal">Penal</SelectItem>
+                      <SelectItem value="comercial">Comercial</SelectItem>
+                      <SelectItem value="otro">Otro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="caseNumber">N° de expediente</Label>
+                  <Input id="caseNumber" {...register("caseNumber")} placeholder="Ej: 12345/2026" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="caseNumber">N° de expediente</Label>
-                <Input id="caseNumber" {...register("caseNumber")} placeholder="Ej: 12345/2026" />
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="space-y-2">
+                  <Label htmlFor="court">Tribunal / Juzgado</Label>
+                  <Input id="court" {...register("court")} placeholder="Ej: Juzgado Civil N°5" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="caseStartDate">Inicio del caso</Label>
+                  <Input id="caseStartDate" type="date" {...register("caseStartDate")} />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-3">
+          ) : (
+            <div className="border-t pt-4 mt-2">
+              <p className="text-sm font-medium text-muted-foreground mb-3">Datos del trámite</p>
               <div className="space-y-2">
-                <Label htmlFor="court">Tribunal / Juzgado</Label>
-                <Input id="court" {...register("court")} placeholder="Ej: Juzgado Civil N°5" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="caseStartDate">Inicio del caso</Label>
-                <Input id="caseStartDate" type="date" {...register("caseStartDate")} />
+                <Label htmlFor="organismo">Organismo</Label>
+                <Input id="organismo" {...register("organismo")} placeholder="Ej: ANSES, DPIP, Defensa del Consumidor, RPI" />
               </div>
             </div>
-          </div>
+          )}
 
           <div className="border-t pt-4 mt-2">
             <p className="text-sm font-medium text-muted-foreground mb-3">Fechas y plazos</p>

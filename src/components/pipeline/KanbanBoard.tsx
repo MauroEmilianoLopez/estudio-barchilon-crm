@@ -19,8 +19,6 @@ import type { PipelineColumn } from "@/types";
 import { WhatsAppModal, buildMessage } from "@/components/whatsapp/WhatsAppModal";
 import { tryNotify } from "@/lib/whatsappNotify";
 
-const WON_STAGE_NAME = "Etapa final";
-
 interface WonNotification {
   contactName: string;
   contactPhone: string;
@@ -130,7 +128,7 @@ export function KanbanBoard({ initialColumns }: KanbanBoardProps) {
 
         if (
           isStageChange &&
-          overColumn.name === WON_STAGE_NAME &&
+          overColumn.isWon &&
           movedDeal?.contactPhone &&
           movedDeal.contactName
         ) {

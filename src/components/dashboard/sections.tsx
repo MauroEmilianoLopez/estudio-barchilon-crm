@@ -287,8 +287,15 @@ export async function OtherPendingAsync() {
 
 export async function PipelineSectionAsync() {
   const [stages, allDeals] = await Promise.all([
-    db.select().from(pipelineStages).orderBy(asc(pipelineStages.order)),
-    db.select({ stageId: deals.stageId, value: deals.value }).from(deals),
+    db
+      .select()
+      .from(pipelineStages)
+      .where(eq(pipelineStages.pipelineType, "judicial"))
+      .orderBy(asc(pipelineStages.order)),
+    db
+      .select({ stageId: deals.stageId, value: deals.value })
+      .from(deals)
+      .where(eq(deals.pipelineType, "judicial")),
   ]);
 
   const pipelineData = stages
