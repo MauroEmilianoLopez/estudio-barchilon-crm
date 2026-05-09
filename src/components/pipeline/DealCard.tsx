@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/constants";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useRouter } from "next/navigation";
 
 const CASE_TYPE_COLORS: Record<string, string> = {
   civil: "#3B82F6",
@@ -79,7 +78,6 @@ export function DealCard({
   paidAmount,
   caseType,
 }: DealCardProps) {
-  const router = useRouter();
   const {
     attributes,
     listeners,
@@ -103,8 +101,7 @@ export function DealCard({
   const fees = agreedFees || 0;
 
   const handleClick = () => {
-    if (isDragging) return;
-    router.push(`/deals/${id}`);
+    window.location.href = `/deals/${id}`;
   };
 
   return (
