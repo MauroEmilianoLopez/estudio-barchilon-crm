@@ -388,6 +388,8 @@ export function ContactDetailClient({
           router.refresh();
         }}
         preselectedContactId={contact.id}
+        preselectedContactName={contact.name}
+        preselectedContactPhone={contact.phone}
       />
 
       {contact.phone && (

@@ -27,7 +27,13 @@ export type TemplateKey =
   | "confirmacion_pago"
   | "tarea_realizada"
   | "resolucion_favorable"
-  | "libre";
+  | "libre"
+  | "act_audiencia"
+  | "act_escrito"
+  | "act_llamada"
+  | "act_reunion"
+  | "act_oficio"
+  | "act_notificacion";
 
 interface WhatsAppModalProps {
   open: boolean;
@@ -84,6 +90,30 @@ export function buildMessage(key: TemplateKey, ctx: BuildContext): string {
     }
     case "resolucion_favorable":
       return `Hola ${name}, excelentes noticias: hemos obtenido una resolucion favorable en tu caso ${titulo}. Coordinemos una reunion para repasar los proximos pasos. Saludos, Abril Barchilon.`;
+    case "act_audiencia":
+      return deal
+        ? `Hola ${name}, se realizó la audiencia de su caso ${titulo}. Le informaremos los próximos pasos. Dra. Barchilon.`
+        : `Hola ${name}, se realizó la audiencia. Le informaremos los próximos pasos. Dra. Barchilon.`;
+    case "act_escrito":
+      return deal
+        ? `Hola ${name}, presentamos el escrito correspondiente a su caso ${titulo}. Le avisaremos cuando haya novedades. Dra. Barchilon.`
+        : `Hola ${name}, presentamos el escrito correspondiente. Le avisaremos cuando haya novedades. Dra. Barchilon.`;
+    case "act_llamada":
+      return deal
+        ? `Hola ${name}, nos comunicamos hoy respecto a su caso ${titulo}. Ante cualquier consulta estoy a disposición. Dra. Barchilon.`
+        : `Hola ${name}, nos comunicamos hoy. Ante cualquier consulta estoy a disposición. Dra. Barchilon.`;
+    case "act_reunion":
+      return deal
+        ? `Hola ${name}, fue un gusto reunirnos hoy sobre su caso ${titulo}. Seguimos trabajando. Dra. Barchilon.`
+        : `Hola ${name}, fue un gusto reunirnos hoy. Seguimos trabajando. Dra. Barchilon.`;
+    case "act_oficio":
+      return deal
+        ? `Hola ${name}, enviamos el oficio correspondiente a su caso ${titulo}. Dra. Barchilon.`
+        : `Hola ${name}, enviamos el oficio correspondiente. Dra. Barchilon.`;
+    case "act_notificacion":
+      return deal
+        ? `Hola ${name}, recibimos una notificación en su caso ${titulo}. La Dra. Barchilon la está analizando. Dra. Barchilon.`
+        : `Hola ${name}, recibimos una notificación. La Dra. Barchilon la está analizando. Dra. Barchilon.`;
     case "libre":
       return `Hola ${name}, `;
   }
@@ -104,6 +134,12 @@ const TITLE_BY_TEMPLATE: Partial<Record<TemplateKey, { icon: typeof CreditCard; 
   tarea_realizada: { icon: Briefcase, label: "Avisar tarea realizada" },
   resolucion_favorable: { icon: Trophy, label: "Avisar resolucion favorable" },
   audiencia: { icon: Gavel, label: "Avisar fecha de actuacion" },
+  act_audiencia: { icon: Gavel, label: "Avisar audiencia realizada" },
+  act_escrito: { icon: FileText, label: "Avisar presentacion de escrito" },
+  act_llamada: { icon: MessageCircle, label: "Avisar llamada al cliente" },
+  act_reunion: { icon: Briefcase, label: "Avisar reunion presencial" },
+  act_oficio: { icon: FileText, label: "Avisar oficio enviado" },
+  act_notificacion: { icon: FileText, label: "Avisar notificacion recibida" },
 };
 
 export function WhatsAppModal({

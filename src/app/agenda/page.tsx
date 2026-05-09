@@ -65,7 +65,13 @@ export default function AgendaPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [showHistory, setShowHistory] = useState(false);
-  const [activityDeal, setActivityDeal] = useState<{ dealId: string; contactId: string } | null>(null);
+  const [activityDeal, setActivityDeal] = useState<{
+    dealId: string;
+    contactId: string;
+    contactName: string | null;
+    contactPhone: string | null;
+    dealTitle: string | null;
+  } | null>(null);
   const [reschedule, setReschedule] = useState<RescheduleTarget | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState("");
 
@@ -210,7 +216,13 @@ export default function AgendaPage() {
                   now={now}
                   onRealized={() => handleVencimientoAction(v.dealId, "realizada")}
                   onReschedule={() => openReschedule({ kind: "deal", dealId: v.dealId, date: toDate(v.nextHearing).toISOString().split("T")[0] })}
-                  onNota={() => setActivityDeal({ dealId: v.dealId, contactId: v.contactId })}
+                  onNota={() => setActivityDeal({
+                    dealId: v.dealId,
+                    contactId: v.contactId,
+                    contactName: v.contactName,
+                    contactPhone: v.contactPhone,
+                    dealTitle: v.dealTitle,
+                  })}
                 />
               ))
             )}
@@ -236,7 +248,13 @@ export default function AgendaPage() {
                   now={now}
                   onCompletada={() => handleTareaComplete(t.id)}
                   onMover={() => openReschedule({ kind: "tarea", id: t.id, date: toDate(t.fecha).toISOString().split("T")[0] })}
-                  onNota={() => setActivityDeal({ dealId: t.dealId, contactId: t.contactId })}
+                  onNota={() => setActivityDeal({
+                    dealId: t.dealId,
+                    contactId: t.contactId,
+                    contactName: t.contactName,
+                    contactPhone: null,
+                    dealTitle: t.dealTitle,
+                  })}
                 />
               ))
             )}
@@ -285,6 +303,9 @@ export default function AgendaPage() {
           onClose={() => { setActivityDeal(null); fetchAll(); }}
           preselectedContactId={activityDeal.contactId}
           preselectedDealId={activityDeal.dealId}
+          preselectedContactName={activityDeal.contactName ?? undefined}
+          preselectedContactPhone={activityDeal.contactPhone}
+          preselectedDealTitle={activityDeal.dealTitle}
         />
       )}
 
