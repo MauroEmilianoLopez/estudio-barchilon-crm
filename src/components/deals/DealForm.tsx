@@ -160,7 +160,14 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
     if (!open) return;
     fetch(`/api/pipeline?type=${currentPipelineType}`)
       .then((r) => r.json())
-      .then(setStages);
+      .then((data: Array<{ id: string; name: string }>) => {
+        setStages(data);
+        const currentStageId = watch("stageId");
+        if (!currentStageId || !data.find((s) => s.id === currentStageId)) {
+          if (data.length > 0) setValue("stageId", data[0].id);
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, currentPipelineType]);
 
   const onSubmit = async (data: DealFormData) => {

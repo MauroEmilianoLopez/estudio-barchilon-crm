@@ -47,7 +47,12 @@ export async function PUT(
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
   if (body.title !== undefined) updateData.title = body.title;
   if (body.value !== undefined) updateData.value = body.value;
-  if (body.stageId !== undefined) updateData.stageId = body.stageId;
+  if (body.stageId !== undefined) {
+    if (!body.stageId || typeof body.stageId !== "string") {
+      return NextResponse.json({ error: "stageId no puede ser vacío" }, { status: 400 });
+    }
+    updateData.stageId = body.stageId;
+  }
   if (body.contactId !== undefined) updateData.contactId = body.contactId;
   if (body.expectedClose !== undefined) {
     updateData.expectedClose = body.expectedClose ? new Date(body.expectedClose) : null;
