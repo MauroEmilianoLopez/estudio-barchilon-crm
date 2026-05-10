@@ -65,11 +65,10 @@ export function PipelineTabs({ judicial, administrativo }: PipelineTabsProps) {
         </div>
       )}
 
-      {tab === "judicial" ? (
-        <KanbanBoard initialColumns={judicial} />
-      ) : (
-        <KanbanBoard initialColumns={administrativo} />
-      )}
+      <KanbanBoard
+        key={tab}
+        initialColumns={tab === "judicial" ? judicial : administrativo}
+      />
     </div>
   );
 }
