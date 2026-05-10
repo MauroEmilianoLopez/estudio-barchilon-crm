@@ -193,7 +193,10 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
         }),
       });
 
-      if (!res.ok) throw new Error(isEdit ? "Error al actualizar caso" : "Error al crear caso");
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || (isEdit ? "Error al actualizar caso" : "Error al crear caso"));
+      }
 
       toast.success(isEdit ? "Caso actualizado" : "Caso creado exitosamente");
 
@@ -223,8 +226,9 @@ export function DealForm({ open, onClose, dealId }: DealFormProps) {
       reset();
       onClose();
       router.refresh();
-    } catch {
-      toast.error(isEdit ? "Error al actualizar el caso" : "Error al crear el caso");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : (isEdit ? "Error al actualizar el caso" : "Error al crear el caso");
+      toast.error(msg);
     }
   };
 

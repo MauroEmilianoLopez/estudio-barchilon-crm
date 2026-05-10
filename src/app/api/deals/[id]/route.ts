@@ -78,13 +78,18 @@ export async function PUT(
   }
   if (body.organismo !== undefined) updateData.organismo = body.organismo || null;
 
-  const [result] = await db
-    .update(deals)
-    .set(updateData)
-    .where(eq(deals.id, id))
-    .returning();
-
-  return NextResponse.json(result);
+  try {
+    const [result] = await db
+      .update(deals)
+      .set(updateData)
+      .where(eq(deals.id, id))
+      .returning();
+    return NextResponse.json(result);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown";
+    console.error("PUT /api/deals/[id] failed:", msg, "updateData keys:", Object.keys(updateData));
+    return NextResponse.json({ error: `Error al actualizar caso: ${msg}` }, { status: 500 });
+  }
 }
 
 export async function DELETE(
