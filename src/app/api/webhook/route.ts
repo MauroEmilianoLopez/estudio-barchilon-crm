@@ -75,6 +75,17 @@ function extractFields(
   return result;
 }
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, x-webhook-secret",
+    },
+  });
+}
+
 export async function POST(request: NextRequest) {
   // Auth check: if a webhook secret is stored, require it in the header
   const [stored] = await db
@@ -131,13 +142,12 @@ export async function POST(request: NextRequest) {
       .returning();
 
     // Log activity for the new lead
-    await db.insert(activities)
-      .values({
-        type: "note",
-        description: `Cliente recibido via webhook${fields.company ? ` (${fields.company})` : ""}`,
-        contactId: contact.id,
-        createdAt: now,
-      });
+    await db.insert(activities).values({
+      type: "note",
+      description: `Cliente recibido via webhook${fields.company ? ` (${fields.company})` : ""}`,
+      contactId: contact.id,
+      createdAt: now,
+    });
 
     return NextResponse.json(
       {
@@ -149,7 +159,12 @@ export async function POST(request: NextRequest) {
           source: contact.source,
         },
       },
-      { status: 201 }
+      {
+        status: 201,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+      }
     );
   } catch (error) {
     return NextResponse.json(
