@@ -3,6 +3,33 @@ import { db } from "@/db";
 import { contacts, activities, crmSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-webhook-secret",
+};
+
+function jsonWithCors(
+  body: Record<string, unknown>,
+  status: number
+): NextResponse {
+  return NextResponse.json(body, {
+    status,
+    headers: CORS_HEADERS,
+  });
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+type DbTransaction = Parameters<typeof db.transaction>[0] extends (
+  tx: infer T,
+  ...args: never[]
+) => unknown
+  ? T
+  : never;
+
 // Field name mapping: common variations → standard field
 const FIELD_MAP: Record<string, string> = {
   // Name
@@ -78,11 +105,7 @@ function extractFields(
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, x-webhook-secret",
-    },
+    headers: CORS_HEADERS,
   });
 }
 
@@ -96,10 +119,7 @@ export async function POST(request: NextRequest) {
   if (stored) {
     const secretHeader = request.headers.get("x-webhook-secret");
     if (!secretHeader || secretHeader !== stored.value) {
-      return NextResponse.json(
-        { error: "Secret invalido o faltante" },
-        { status: 401 }
-      );
+      return jsonWithCors({ error: "Secret invalido o faltante" }, 401);
     }
   }
 
@@ -107,49 +127,113 @@ export async function POST(request: NextRequest) {
   try {
     payload = await request.json();
   } catch {
-    return NextResponse.json({ error: "JSON invalido" }, { status: 400 });
+    return jsonWithCors({ error: "JSON invalido" }, 400);
   }
 
   const fields = extractFields(payload);
 
   if (!fields.name) {
-    return NextResponse.json(
+    return jsonWithCors(
       {
         error: "Campo 'name' o 'nombre' es requerido",
         received: Object.keys(payload),
         hint: "Campos soportados: name, nombre, full_name, email, correo, phone, telefono, company, empresa, notes, notas, message",
       },
-      { status: 400 }
+      400
     );
   }
 
-  try {
-    const now = new Date();
-    const [contact] = await db
-      .insert(contacts)
-      .values({
-        name: fields.name,
-        email: fields.email || null,
-        phone: fields.phone || null,
-        company: fields.company || null,
-        source: "webhook",
-        temperature: "cold",
-        score: 0,
-        notes: fields.notes || null,
-        createdAt: now,
-        updatedAt: now,
-      })
-      .returning();
+  if (fields.email && !isValidEmail(fields.email)) {
+    return jsonWithCors({ error: "Email invalido" }, 400);
+  }
 
-    // Log activity for the new lead
-    await db.insert(activities).values({
-      type: "note",
-      description: `Cliente recibido via webhook${fields.company ? ` (${fields.company})` : ""}`,
-      contactId: contact.id,
-      createdAt: now,
+  try {
+    const contact = await db.transaction(async (tx: DbTransaction) => {
+      const now = new Date();
+      let contactRecord: typeof contacts.$inferSelect | undefined;
+
+      if (fields.email) {
+        const [existingByEmail] = await tx
+          .select()
+          .from(contacts)
+          .where(eq(contacts.email, fields.email))
+          .limit(1);
+
+        if (existingByEmail) {
+          contactRecord = existingByEmail;
+        }
+      }
+
+      if (!contactRecord && fields.phone) {
+        const [existingByPhone] = await tx
+          .select()
+          .from(contacts)
+          .where(eq(contacts.phone, fields.phone))
+          .limit(1);
+
+        if (existingByPhone) {
+          contactRecord = existingByPhone;
+        }
+      }
+
+      if (contactRecord) {
+        const updates: Record<string, string | Date> = {};
+
+        if (!contactRecord.email && fields.email) {
+          updates.email = fields.email;
+        }
+
+        if (!contactRecord.phone && fields.phone) {
+          updates.phone = fields.phone;
+        }
+
+        if (!contactRecord.company && fields.company) {
+          updates.company = fields.company;
+        }
+
+        if (Object.keys(updates).length > 0) {
+          const [updatedContact] = await tx
+            .update(contacts)
+            .set({
+              ...updates,
+              updatedAt: now,
+            })
+            .where(eq(contacts.id, contactRecord.id))
+            .returning();
+
+          contactRecord = updatedContact ?? contactRecord;
+        }
+      } else {
+        const [createdContact] = await tx
+          .insert(contacts)
+          .values({
+            name: fields.name,
+            email: fields.email || null,
+            phone: fields.phone || null,
+            company: fields.company || null,
+            source: "webhook",
+            temperature: "cold",
+            score: 0,
+            notes: fields.notes || null,
+            createdAt: now,
+            updatedAt: now,
+          })
+          .returning();
+
+        contactRecord = createdContact;
+      }
+
+      await tx.insert(activities).values({
+        type: "note",
+        description: `Cliente recibido via webhook${fields.company ? ` (${fields.company})` : ""}`,
+        contactId: contactRecord.id,
+        createdAt: now,
+      });
+
+      return contactRecord;
     });
 
-    return NextResponse.json(
+    return jsonWithCors(
       {
         success: true,
         contact: {
@@ -159,19 +243,15 @@ export async function POST(request: NextRequest) {
           source: contact.source,
         },
       },
-      {
-        status: 201,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
+      201
     );
   } catch (error) {
-    return NextResponse.json(
+    console.error("[webhook] Error al procesar intake", error);
+    return jsonWithCors(
       {
-        error: `Error al crear contacto: ${error instanceof Error ? error.message : "Unknown"}`,
+        error: "No pudimos procesar su consulta. Intente nuevamente más tarde.",
       },
-      { status: 500 }
+      500
     );
   }
 }
