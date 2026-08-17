@@ -23,6 +23,21 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function normalizeOptionalText(value: unknown): string | undefined {
+  if (typeof value !== "string" && typeof value !== "number") return undefined;
+  const normalized = String(value).trim();
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function readTimestamp(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value.trim());
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+}
+
 type DbTransaction = Parameters<typeof db.transaction>[0] extends (
   tx: infer T,
   ...args: never[]
@@ -131,6 +146,46 @@ export async function POST(request: NextRequest) {
   }
 
   const fields = extractFields(payload);
+  const website = normalizeOptionalText(payload.website);
+  const hasFormStartedAt = Object.prototype.hasOwnProperty.call(
+    payload,
+    "formStartedAt"
+  );
+  const hasSubmittedAt = Object.prototype.hasOwnProperty.call(
+    payload,
+    "submittedAt"
+  );
+  const timestampValue = hasFormStartedAt
+    ? payload.formStartedAt
+    : payload.submittedAt;
+  const formStartedAt =
+    hasFormStartedAt || hasSubmittedAt ? readTimestamp(timestampValue) : undefined;
+  const isIntakeFormPayload =
+    Object.prototype.hasOwnProperty.call(payload, "website") ||
+    hasFormStartedAt ||
+    hasSubmittedAt;
+
+  if (website) {
+    return jsonWithCors({ error: "Solicitud invalida" }, 400);
+  }
+
+  if (hasFormStartedAt || hasSubmittedAt) {
+    if (formStartedAt === undefined) {
+      return jsonWithCors({ error: "Solicitud invalida" }, 400);
+    }
+
+    const elapsedMs = Date.now() - formStartedAt;
+
+    if (!Number.isFinite(formStartedAt) || elapsedMs < 3_000 || elapsedMs > 86_400_000) {
+      return jsonWithCors({ error: "Solicitud invalida" }, 400);
+    }
+  }
+
+  if (fields.name) fields.name = fields.name.trim();
+  if (fields.email) fields.email = fields.email.trim().toLowerCase();
+  if (fields.phone) fields.phone = fields.phone.trim();
+  if (fields.notes) fields.notes = fields.notes.trim();
+  if (fields.company) fields.company = fields.company.trim();
 
   if (!fields.name) {
     return jsonWithCors(
@@ -143,8 +198,32 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (fields.name.length < 2 || fields.name.length > 120) {
+    return jsonWithCors({ error: "Nombre invalido" }, 400);
+  }
+
   if (fields.email && !isValidEmail(fields.email)) {
     return jsonWithCors({ error: "Email invalido" }, 400);
+  }
+
+  if (fields.email && fields.email.length > 254) {
+    return jsonWithCors({ error: "Email invalido" }, 400);
+  }
+
+  if (fields.phone && fields.phone.length > 40) {
+    return jsonWithCors({ error: "Telefono invalido" }, 400);
+  }
+
+  if (fields.company && fields.company.length > 160) {
+    return jsonWithCors({ error: "Empresa invalida" }, 400);
+  }
+
+  if (fields.notes && fields.notes.length > 3000) {
+    return jsonWithCors({ error: "Mensaje invalido" }, 400);
+  }
+
+  if (isIntakeFormPayload && !fields.notes) {
+    return jsonWithCors({ error: "Mensaje invalido" }, 400);
   }
 
   try {
