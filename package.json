@@ -11,6 +11,7 @@
     "init:seed": "npx tsx scripts/init.ts --seed",
     "seed": "npx tsx src/db/seed.ts",
     "db:push": "npx drizzle-kit push",
+    "db:align-local": "npx tsx scripts/align-local-schema.ts",
     "local": "npm run build && npm run init && npm start",
     "mcp": "npx tsx mcp/crm-server.ts",
     "postinstall": "node -e \"try{require('fs').mkdirSync('data',{recursive:true})}catch{}\""

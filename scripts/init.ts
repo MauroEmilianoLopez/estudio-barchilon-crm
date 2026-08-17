@@ -56,7 +56,8 @@ async function init() {
       "order" INTEGER NOT NULL,
       color TEXT NOT NULL DEFAULT '#64748b',
       is_won INTEGER NOT NULL DEFAULT 0,
-      is_lost INTEGER NOT NULL DEFAULT 0
+      is_lost INTEGER NOT NULL DEFAULT 0,
+      pipeline_type TEXT NOT NULL DEFAULT 'judicial'
     )`,
     `CREATE TABLE IF NOT EXISTS deals (
       id TEXT PRIMARY KEY,
@@ -77,6 +78,8 @@ async function init() {
       court TEXT,
       case_start_date INTEGER,
       internal_notes TEXT,
+      pipeline_type TEXT NOT NULL DEFAULT 'judicial',
+      organismo TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )`,
@@ -104,12 +107,26 @@ async function init() {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     )`,
+    `CREATE TABLE IF NOT EXISTS tareas (
+      id TEXT PRIMARY KEY,
+      deal_id TEXT NOT NULL REFERENCES deals(id),
+      contact_id TEXT NOT NULL REFERENCES contacts(id),
+      tipo TEXT NOT NULL DEFAULT 'tarea_procuracion',
+      titulo TEXT NOT NULL,
+      descripcion TEXT,
+      fecha INTEGER NOT NULL,
+      completada INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL
+    )`,
   ]);
 
   console.log("Tables created.");
 
   // Migrations: add new columns if they don't exist (for existing databases)
   const migrations = [
+    { table: "pipeline_stages", column: "pipeline_type", sql: `ALTER TABLE pipeline_stages ADD COLUMN pipeline_type TEXT NOT NULL DEFAULT 'judicial'` },
+    { table: "deals", column: "pipeline_type", sql: `ALTER TABLE deals ADD COLUMN pipeline_type TEXT NOT NULL DEFAULT 'judicial'` },
+    { table: "deals", column: "organismo", sql: `ALTER TABLE deals ADD COLUMN organismo TEXT` },
     { table: "deals", column: "es_perentorio", sql: `ALTER TABLE deals ADD COLUMN es_perentorio INTEGER NOT NULL DEFAULT 0` },
     { table: "deals", column: "case_type", sql: `ALTER TABLE deals ADD COLUMN case_type TEXT` },
     { table: "deals", column: "case_number", sql: `ALTER TABLE deals ADD COLUMN case_number TEXT` },
@@ -147,7 +164,7 @@ async function init() {
 
     for (const stage of defaultStages) {
       await client.execute({
-        sql: `INSERT INTO pipeline_stages (id, name, "order", color, is_won, is_lost) VALUES (?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO pipeline_stages (id, name, "order", color, is_won, is_lost, pipeline_type) VALUES (?, ?, ?, ?, ?, ?, 'judicial')`,
         args: [crypto.randomUUID(), stage.name, stage.order, stage.color, stage.isWon, stage.isLost],
       });
     }
